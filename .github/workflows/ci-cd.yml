@@ -26,7 +26,6 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   DOTNET_VERSION: "10.0.x"
   DOTNET_NOLOGO: "true"
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -34,9 +33,9 @@ jobs:
     name: 🧪 Build & tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
           cache: true
@@ -53,18 +52,22 @@ jobs:
       - name: Format
         run: dotnet format src/DrangohtGames.slnx --verify-no-changes --no-restore
 
+      # Les tests tournent sur Microsoft.Testing.Platform (déclaré dans global.json).
+      # VSTest n'est plus dans la boucle : les options de rapport passent après `--`.
       - name: Tests
         run: |
-          dotnet test src/DrangohtGames.slnx \
+          dotnet test --solution src/DrangohtGames.slnx \
             --configuration Release \
             --no-build \
-            --logger "trx;LogFileName=tests.trx" \
-            --collect:"XPlat Code Coverage" \
+            -- \
+            --report-trx \
+            --coverage \
+            --coverage-output-format cobertura \
             --results-directory ./artifacts/tests
 
       - name: Publier les résultats de test
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: ./artifacts/tests
@@ -84,12 +87,12 @@ jobs:
       image_tag: ${{ steps.meta.outputs.short_sha }}
       digest: ${{ steps.push.outputs.digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Connexion au registre
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -107,7 +110,7 @@ jobs:
       # arrière n'est possible et `docker pull latest` peut resservir l'ancienne image.
       - name: Construire et publier
         id: push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: true
@@ -131,7 +134,7 @@ jobs:
       name: production
       url: ${{ vars.SITE_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Choisir l'image et l'étiquette à déployer
         id: target
@@ -156,7 +159,7 @@ jobs:
       # Le compose est la source de vérité du déploiement : il est copié à chaque fois,
       # de sorte que le serveur ne diverge jamais du dépôt.
       - name: Copier le compose sur le serveur
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -165,7 +168,7 @@ jobs:
           target: ${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}
 
       - name: Déployer
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v1.2.5
         env:
           IMAGE: ${{ steps.target.outputs.image }}
           IMAGE_TAG: ${{ steps.target.outputs.tag }}
@@ -184,7 +187,6 @@ jobs:
           # Les valeurs voyagent par l'environnement, pas interpolées dans le script :
           # elles n'apparaissent donc jamais en clair dans la trace d'exécution.
           envs: IMAGE,IMAGE_TAG,ITCHIO_API_KEY,ITCHIO_CURRENCY,ITCHIO_CACHE_DURATION,HTTP_PORT,SITE_NAME,SITE_ITCH_URL,SITE_CONTACT_EMAIL,SITE_GITHUB_URL
-          script_stop: true # une commande qui échoue arrête le script
           script: |
             set -euo pipefail
             cd "${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}"

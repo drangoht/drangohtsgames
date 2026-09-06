@@ -16,9 +16,11 @@
 
 ```bash
 dotnet build src/DrangohtGames.slnx -warnaserror
-dotnet test  src/DrangohtGames.slnx
-dotnet test  src/DrangohtGames.slnx --filter "Category!=Integration"   # boucle rapide
+dotnet test  --solution src/DrangohtGames.slnx
 dotnet format src/DrangohtGames.slnx --verify-no-changes               # avant tout commit
+
+# Boucle rapide : tout sauf les tests d'intégration
+dotnet test --solution src/DrangohtGames.slnx -- --filter-not-trait "Category=Integration"
 
 # Exécution locale — la clé d'API est un secret, jamais dans appsettings.json
 cd src/DrangohtGames.Web

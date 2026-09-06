@@ -176,9 +176,11 @@ rien n'est reconstruit, l'image déjà publiée est redéployée.
 ## Développement
 
 ```bash
-dotnet test  src/DrangohtGames.slnx                                    # 91 tests
-dotnet test  src/DrangohtGames.slnx --filter "Category!=Integration"   # boucle rapide
-dotnet format src/DrangohtGames.slnx --verify-no-changes               # avant commit
+dotnet test  --solution src/DrangohtGames.slnx            # 91 tests
+dotnet format src/DrangohtGames.slnx --verify-no-changes  # avant commit
+
+# Boucle rapide : tout sauf les tests d'intégration
+dotnet test --solution src/DrangohtGames.slnx -- --filter-not-trait "Category=Integration"
 ```
 
 Le projet compile en `TreatWarningsAsErrors` : un avertissement d'analyseur casse la build.

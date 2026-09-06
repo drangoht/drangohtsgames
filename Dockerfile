@@ -7,7 +7,7 @@ WORKDIR /source
 
 # Les fichiers projet d'abord : tant qu'aucune dépendance ne change, la couche de
 # restauration est réutilisée telle quelle d'un build à l'autre.
-COPY Directory.Build.props Directory.Build.targets ./
+COPY Directory.Build.props Directory.Build.targets global.json ./
 COPY src/DrangohtGames.slnx src/
 COPY src/DrangohtGames.Web/DrangohtGames.Web.csproj src/DrangohtGames.Web/
 COPY tests/DrangohtGames.Tests/DrangohtGames.Tests.csproj tests/DrangohtGames.Tests/
@@ -16,7 +16,7 @@ RUN dotnet restore src/DrangohtGames.slnx
 COPY . .
 
 # La suite tourne dans l'image : une image ne se construit pas sur du code rouge.
-RUN dotnet test src/DrangohtGames.slnx --configuration $BUILD_CONFIGURATION --no-restore
+RUN dotnet test --solution src/DrangohtGames.slnx --configuration $BUILD_CONFIGURATION --no-restore
 
 RUN dotnet publish src/DrangohtGames.Web/DrangohtGames.Web.csproj \
         --configuration $BUILD_CONFIGURATION \
