@@ -139,10 +139,20 @@ déploiement à partir des secrets et variables du dépôt : rien à créer ni �
 main, et aucun risque de BOM, de fins de ligne Windows ou de fichier déposé au mauvais
 endroit.
 
-**Prérequis serveur** : Docker Engine et le plugin **Docker Compose v2**
-(`sudo apt-get install -y docker-compose-plugin`). La v1 autonome, hors support depuis
-juillet 2023, n'est pas prise en charge — le déploiement s'arrête avec un message explicite
-si elle est la seule présente.
+**Prérequis serveur** : Docker Engine et le plugin **Docker Compose v2**. La v1 autonome,
+hors support depuis juillet 2023, n'est pas prise en charge — le déploiement s'arrête avec un
+message explicite si elle est la seule présente.
+
+```bash
+# Docker installé depuis le dépôt officiel Docker
+sudo apt-get update && sudo apt-get install -y docker-compose-plugin
+
+# Docker installé autrement (paquet Ubuntu docker.io, script…) : ce paquet n'existe pas
+# dans les dépôts, on pose le plugin directement.
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)"   -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+```
 
 **Secrets** requis :
 

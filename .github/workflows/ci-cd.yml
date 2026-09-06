@@ -217,8 +217,17 @@ jobs:
             # « unknown command: docker compose » qui ne dit pas quoi installer.
             if ! docker compose version >/dev/null 2>&1; then
               echo "ERREUR : le plugin Docker Compose v2 est absent de ce serveur."
-              echo "  sudo apt-get update && sudo apt-get install -y docker-compose-plugin"
-              echo "  (la v1 autonome n'est plus prise en charge : hors support depuis juillet 2023)"
+              echo "  La v1 autonome n'est pas prise en charge (hors support depuis juillet 2023)."
+              echo
+              echo "  Si Docker vient du dépôt officiel Docker :"
+              echo "    sudo apt-get update && sudo apt-get install -y docker-compose-plugin"
+              echo
+              echo "  Sinon — par exemple avec le paquet Ubuntu docker.io, qui ne fournit pas"
+              echo "  le plugin — l'installer directement, sans toucher aux dépôts :"
+              echo "    sudo mkdir -p /usr/local/lib/docker/cli-plugins"
+              echo "    sudo curl -fsSL \"https://github.com/docker/compose/releases/latest/download/docker-compose-linux-\$(uname -m)\" \\"
+              echo "      -o /usr/local/lib/docker/cli-plugins/docker-compose"
+              echo "    sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose"
               exit 1
             fi
 
