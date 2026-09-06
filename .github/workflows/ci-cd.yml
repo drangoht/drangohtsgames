@@ -133,13 +133,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Choisir l'étiquette à déployer
+      - name: Choisir l'image et l'étiquette à déployer
         id: target
         run: |
+          if [ -z "${{ secrets.ITCHIO_API_KEY }}" ]; then
+            echo "::error::Le secret ITCHIO_API_KEY n'est pas défini sur ce dépôt."
+            echo "  gh secret set ITCHIO_API_KEY --repo ${{ github.repository }}"
+            echo "  La clé se génère sur https://itch.io/user/settings/api-keys (scope profile:games)."
+            exit 1
+          fi
+
           tag="${{ inputs.rollback_tag }}"
           if [ -z "$tag" ]; then
             tag="${{ needs.build-image.outputs.image_tag }}"
           fi
+
+          # Une référence d'image ne tolère pas les majuscules, un nom de dépôt si.
+          echo "image=${REGISTRY}/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"
           echo "Déploiement de l'étiquette ${tag}"
 
@@ -157,12 +167,23 @@ jobs:
       - name: Déployer
         uses: appleboy/ssh-action@v1.2.0
         env:
+          IMAGE: ${{ steps.target.outputs.image }}
           IMAGE_TAG: ${{ steps.target.outputs.tag }}
+          ITCHIO_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
+          ITCHIO_CURRENCY: ${{ vars.ITCHIO_CURRENCY || 'USD' }}
+          ITCHIO_CACHE_DURATION: ${{ vars.ITCHIO_CACHE_DURATION || '00:30:00' }}
+          HTTP_PORT: ${{ vars.HTTP_PORT || '8080' }}
+          SITE_NAME: ${{ vars.SITE_NAME || 'Drangoht Games' }}
+          SITE_ITCH_URL: ${{ vars.SITE_ITCH_URL || 'https://drangoht.itch.io/' }}
+          SITE_CONTACT_EMAIL: ${{ vars.SITE_CONTACT_EMAIL }}
+          SITE_GITHUB_URL: ${{ vars.SITE_GITHUB_URL }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          envs: IMAGE_TAG
+          # Les valeurs voyagent par l'environnement, pas interpolées dans le script :
+          # elles n'apparaissent donc jamais en clair dans la trace d'exécution.
+          envs: IMAGE,IMAGE_TAG,ITCHIO_API_KEY,ITCHIO_CURRENCY,ITCHIO_CACHE_DURATION,HTTP_PORT,SITE_NAME,SITE_ITCH_URL,SITE_CONTACT_EMAIL,SITE_GITHUB_URL
           script_stop: true # une commande qui échoue arrête le script
           script: |
             set -euo pipefail
@@ -171,38 +192,26 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" \
               | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
-            # `.env` porte le secret ITCHIO_API_KEY et n'est jamais recopié par la CI :
-            # on n'y écrit que l'étiquette à déployer.
-            touch .env
-            grep -v '^IMAGE_TAG=' .env > .env.next || true
-            echo "IMAGE_TAG=${IMAGE_TAG}" >> .env.next
-            mv .env.next .env
+            # Le `.env` est *dérivé* des secrets et variables du dépôt, pas maintenu à la
+            # main sur le serveur. Le serveur n'a ainsi aucune configuration propre à
+            # entretenir, et les pièges d'un fichier rédigé sous Windows — BOM, CRLF,
+            # mauvais répertoire — ne peuvent plus se produire.
+            # `printf` plutôt qu'un heredoc : les valeurs sont écrites telles quelles,
+            # sans qu'un `$` ou une apostrophe dans une clé ne soit réinterprété.
+            umask 077
+            {
+              printf 'IMAGE=%s\n'                 "$IMAGE"
+              printf 'IMAGE_TAG=%s\n'             "$IMAGE_TAG"
+              printf 'ITCHIO_API_KEY=%s\n'        "$ITCHIO_API_KEY"
+              printf 'ITCHIO_CURRENCY=%s\n'       "$ITCHIO_CURRENCY"
+              printf 'ITCHIO_CACHE_DURATION=%s\n' "$ITCHIO_CACHE_DURATION"
+              printf 'HTTP_PORT=%s\n'             "$HTTP_PORT"
+              printf 'SITE_NAME=%s\n'             "$SITE_NAME"
+              printf 'SITE_ITCH_URL=%s\n'         "$SITE_ITCH_URL"
+              printf 'SITE_CONTACT_EMAIL=%s\n'    "$SITE_CONTACT_EMAIL"
+              printf 'SITE_GITHUB_URL=%s\n'       "$SITE_GITHUB_URL"
+            } > .env
             chmod 600 .env
-
-            # Un `.env` rédigé sous Windows arrive avec un BOM ou des CRLF. La première
-            # variable devient alors invisible pour Compose, qui la déclare « manquante »
-            # alors qu'elle est bien dans le fichier — message trompeur s'il en est.
-            if [ "$(head -c 3 .env | od -An -tx1 | tr -d ' ')" = "efbbbf" ]; then
-              echo "ERREUR : $(pwd)/.env commence par un BOM UTF-8 (ajouté par PowerShell)."
-              echo "  Corriger sur le serveur :"
-              echo "    sed -i '1s/^\xEF\xBB\xBF//' .env"
-              exit 1
-            fi
-
-            if od -c .env | grep -q '\\r'; then
-              echo "ERREUR : $(pwd)/.env contient des fins de ligne Windows (CRLF)."
-              echo "  Corriger sur le serveur :"
-              echo "    sed -i 's/\\r$//' .env"
-              exit 1
-            fi
-
-            if ! grep -q '^ITCHIO_API_KEY=..*' .env; then
-              echo "ERREUR : ITCHIO_API_KEY est absent ou vide dans $(pwd)/.env"
-              echo "  Le fichier doit se trouver dans ce répertoire précis, pas dans le home :"
-              echo "  Compose ne lit que le .env de son répertoire de travail."
-              echo "  Modèle : .env.example à la racine du dépôt."
-              exit 1
-            fi
 
             # Sans cette détection, l'absence du plugin se manifeste par un
             # « unknown command: docker compose » qui ne dit pas quoi installer.

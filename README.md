@@ -134,14 +134,36 @@ Deux comportements méritent d'être connus :
 
 `.github/workflows/ci-cd.yml` : tests → image Docker sur GHCR → déploiement SSH.
 
-**Secrets** du dépôt : `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`.
-**Variables** : `SITE_URL`, `DEPLOY_PATH` (défaut `/opt/drangohtgames`).
+**Le serveur n'a aucune configuration à entretenir.** Le `.env` y est *généré* à chaque
+déploiement à partir des secrets et variables du dépôt : rien à créer ni à maintenir à la
+main, et aucun risque de BOM, de fins de ligne Windows ou de fichier déposé au mauvais
+endroit.
+
+**Secrets** requis :
+
+| Secret | Rôle |
+|---|---|
+| `ITCHIO_API_KEY` | Clé itch.io, scope `profile:games` |
+| `VPS_HOST` | Adresse du serveur |
+| `VPS_USER` | Utilisateur SSH |
+| `VPS_SSH_KEY` | Clé privée SSH, **sans passphrase** |
+
+**Variables** (toutes facultatives, valeurs par défaut dans le workflow) : `SITE_URL`,
+`DEPLOY_PATH` (défaut `/opt/drangohtgames`), `SITE_NAME`, `SITE_ITCH_URL`,
+`SITE_CONTACT_EMAIL`, `SITE_GITHUB_URL`, `HTTP_PORT`, `ITCHIO_CURRENCY`,
+`ITCHIO_CACHE_DURATION`.
 
 Aucun secret de registre à gérer : GHCR s'authentifie avec le `GITHUB_TOKEN` natif.
 
-Sur le serveur, un seul fichier à créer **à la main, une fois** : `.env`, à partir de
-`.env.example`. Il porte `ITCHIO_API_KEY` et la CI ne l'écrase jamais — elle n'y met à jour
-que la ligne `IMAGE_TAG`.
+```bash
+gh secret set ITCHIO_API_KEY --repo drangoht/drangohtsgames
+gh secret set VPS_HOST       --repo drangoht/drangohtsgames
+gh secret set VPS_USER       --repo drangoht/drangohtsgames
+gh secret set VPS_SSH_KEY    --repo drangoht/drangohtsgames
+```
+
+Les valeurs sont transmises au serveur par l'environnement SSH, jamais interpolées dans le
+script : elles n'apparaissent donc pas dans la trace d'exécution.
 
 ### Revenir à une version précédente
 

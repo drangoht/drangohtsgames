@@ -3,7 +3,7 @@ services:
     # L'image est identifiée par un condensat immuable poussé par la CI (`IMAGE_TAG`),
     # pas par `latest` : sur le serveur, on sait exactement quelle version tourne, et
     # revenir en arrière consiste à changer une variable.
-    image: ${IMAGE:-ghcr.io/drangoht/drangohtgames}:${IMAGE_TAG:-latest}
+    image: ${IMAGE:-ghcr.io/drangoht/drangohtsgames}:${IMAGE_TAG:-latest}
     container_name: drangohtgames
     restart: unless-stopped
 
