@@ -139,6 +139,11 @@ déploiement à partir des secrets et variables du dépôt : rien à créer ni �
 main, et aucun risque de BOM, de fins de ligne Windows ou de fichier déposé au mauvais
 endroit.
 
+**Prérequis serveur** : Docker Engine et le plugin **Docker Compose v2**
+(`sudo apt-get install -y docker-compose-plugin`). La v1 autonome, hors support depuis
+juillet 2023, n'est pas prise en charge — le déploiement s'arrête avec un message explicite
+si elle est la seule présente.
+
 **Secrets** requis :
 
 | Secret | Rôle |

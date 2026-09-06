@@ -213,24 +213,28 @@ jobs:
             } > .env
             chmod 600 .env
 
-            # Sans cette détection, l'absence du plugin se manifeste par un
+            # Compose v2 est requis. Sans ce contrôle, son absence se manifeste par un
             # « unknown command: docker compose » qui ne dit pas quoi installer.
-            if docker compose version >/dev/null 2>&1; then
-              compose() { docker compose "$@"; }
-            elif command -v docker-compose >/dev/null 2>&1; then
-              echo "AVERTISSEMENT : Docker Compose v1 détecté, hors support depuis juillet 2023."
-              echo "Installer le plugin v2 : sudo apt-get install -y docker-compose-plugin"
-              compose() { docker-compose "$@"; }
-            else
-              echo "ERREUR : Docker Compose est absent de ce serveur."
+            if ! docker compose version >/dev/null 2>&1; then
+              echo "ERREUR : le plugin Docker Compose v2 est absent de ce serveur."
               echo "  sudo apt-get update && sudo apt-get install -y docker-compose-plugin"
+              echo "  (la v1 autonome n'est plus prise en charge : hors support depuis juillet 2023)"
               exit 1
             fi
 
-            compose pull
+            docker compose pull
             # `up -d` recrée uniquement ce qui a changé — l'ancien conteneur ne s'arrête
             # qu'une fois le nouveau prêt, au lieu d'un `stop`/`rm`/`run` à froid.
-            compose up -d --remove-orphans
+            docker compose up -d --remove-orphans
+
+            # Un conteneur « créé » n'est pas un conteneur qui tourne : un port déjà pris
+            # laisserait sinon le déploiement passer pour réussi alors que le site est à terre.
+            if [ -z "$(docker compose ps --status running --quiet)" ]; then
+              echo "ERREUR : le conteneur ne tourne pas après le déploiement."
+              docker compose ps
+              docker compose logs --tail 40
+              exit 1
+            fi
 
             docker logout ${{ env.REGISTRY }}
 
