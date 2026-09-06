@@ -177,6 +177,32 @@ jobs:
             grep -v '^IMAGE_TAG=' .env > .env.next || true
             echo "IMAGE_TAG=${IMAGE_TAG}" >> .env.next
             mv .env.next .env
+            chmod 600 .env
+
+            # Un `.env` rédigé sous Windows arrive avec un BOM ou des CRLF. La première
+            # variable devient alors invisible pour Compose, qui la déclare « manquante »
+            # alors qu'elle est bien dans le fichier — message trompeur s'il en est.
+            if [ "$(head -c 3 .env | od -An -tx1 | tr -d ' ')" = "efbbbf" ]; then
+              echo "ERREUR : $(pwd)/.env commence par un BOM UTF-8 (ajouté par PowerShell)."
+              echo "  Corriger sur le serveur :"
+              echo "    sed -i '1s/^\xEF\xBB\xBF//' .env"
+              exit 1
+            fi
+
+            if od -c .env | grep -q '\\r'; then
+              echo "ERREUR : $(pwd)/.env contient des fins de ligne Windows (CRLF)."
+              echo "  Corriger sur le serveur :"
+              echo "    sed -i 's/\\r$//' .env"
+              exit 1
+            fi
+
+            if ! grep -q '^ITCHIO_API_KEY=..*' .env; then
+              echo "ERREUR : ITCHIO_API_KEY est absent ou vide dans $(pwd)/.env"
+              echo "  Le fichier doit se trouver dans ce répertoire précis, pas dans le home :"
+              echo "  Compose ne lit que le .env de son répertoire de travail."
+              echo "  Modèle : .env.example à la racine du dépôt."
+              exit 1
+            fi
 
             # Sans cette détection, l'absence du plugin se manifeste par un
             # « unknown command: docker compose » qui ne dit pas quoi installer.
