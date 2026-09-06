@@ -1,0 +1,183 @@
+@page "/games/{slug}"
+@inject IGameCatalog Catalog
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+@inject NavigationManager Navigation
+
+@if (_game is null)
+{
+    <PageTitle>@T["NotFound.Title"] — @Site.Value.Name</PageTitle>
+    <h1 class="page-title">@T["NotFound.Title"]</h1>
+    <p>@T["NotFound.Body"]</p>
+    <a class="button button--primary" href="/">@T["NotFound.Home"]</a>
+}
+else
+{
+    <PageTitle>@_game.Title — @Site.Value.Name</PageTitle>
+    <HeadContent>
+        <meta name="description" content="@(Tagline ?? _game.Title)" />
+        <meta property="og:title" content="@_game.Title" />
+        <meta property="og:type" content="website" />
+        @if (_game.CoverUrl is not null)
+        {
+            <meta property="og:image" content="@_game.CoverUrl" />
+        }
+    </HeadContent>
+
+    <nav class="breadcrumb">
+        <a href="/">← @T["Game.BackToGames"]</a>
+    </nav>
+
+    <article class="game">
+        <header class="game__header">
+            @if (_game.CoverUrl is not null)
+            {
+                <img class="game__cover" src="@_game.CoverUrl" alt="" width="315" height="250" decoding="async" />
+            }
+
+            <div class="game__intro">
+                <h1 class="page-title">@_game.Title</h1>
+
+                @if (Tagline is not null)
+                {
+                    <p class="game__tagline">@Tagline</p>
+                }
+
+                <dl class="game__facts">
+                    <div>
+                        <dt>@T["Filter.Platform"]</dt>
+                        <dd><PlatformBadges Platforms="_game.Platforms" PlayableInBrowser="_game.IsEmbeddable" /></dd>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_game.Engine))
+                    {
+                        <div>
+                            <dt>@T["Game.Engine"]</dt>
+                            <dd>@_game.Engine</dd>
+                        </div>
+                    }
+
+                    @if (_game.PublishedAt is { } publishedAt)
+                    {
+                        <div>
+                            <dt>@T["Game.ReleaseDate"]</dt>
+                            <dd><time datetime="@publishedAt.ToString("O", CultureInfo.InvariantCulture)">@publishedAt.ToString("d", CultureInfo.CurrentCulture)</time></dd>
+                        </div>
+                    }
+
+                    <div>
+                        <dt>@T["Game.Price"]</dt>
+                        <dd class="@(_game.Price.IsFree ? "price price--free" : "price")">
+                            @(_game.Price.IsFree ? T["Game.Free"].Value : _game.Price.ToDisplayString(CultureInfo.CurrentCulture))
+                        </dd>
+                    </div>
+                </dl>
+
+                <a class="button button--primary" href="@_game.ItchUrl"
+                   rel="noopener noreferrer external" target="_blank">
+                    @(_game.IsEmbeddable ? T["Game.PlayInBrowser"] : T["Game.GetItOnItch"])
+                </a>
+            </div>
+        </header>
+
+        @if (_game.Tags.Count > 0)
+        {
+            <section class="game__section">
+                <h2>@T["Game.Tags"]</h2>
+                <ul class="tags">
+                    @foreach (var tag in _game.Tags)
+                    {
+                        <li><a class="tag" href="/?tag=@Uri.EscapeDataString(tag)">@tag</a></li>
+                    }
+                </ul>
+            </section>
+        }
+
+        <section class="game__section">
+            <h2>@T["Game.About"]</h2>
+            @if (Description is { } description)
+            {
+                @* Le contenu éditorial est rédigé par nous et rendu en texte, pas en HTML :
+                   aucune balise saisie dans le fichier ne peut s'exécuter dans la page. *@
+                @foreach (var paragraph in SplitParagraphs(description))
+                {
+                    <p>@paragraph</p>
+                }
+            }
+            else
+            {
+                <p class="muted">@T["Game.NoDescription"]</p>
+            }
+        </section>
+
+        @if (_game.Screenshots.Count > 0)
+        {
+            <section class="game__section">
+                <h2>@T["Game.Screenshots"]</h2>
+                <ul class="shots">
+                    @foreach (var shot in _game.Screenshots)
+                    {
+                        <li>
+                            <img src="@shot.Url" alt="@shot.Caption.For(CultureInfo.CurrentUICulture)"
+                                 loading="lazy" decoding="async" />
+                        </li>
+                    }
+                </ul>
+            </section>
+        }
+
+        <section class="game__section">
+            <h2>itch.io</h2>
+            @* Le widget officiel : achat et téléchargement se font chez itch.io, le site
+               ne manipule jamais de paiement. *@
+            <iframe class="itch-widget"
+                    src="@EmbedUrl"
+                    title="@string.Format(CultureInfo.CurrentCulture, T["Game.EmbedTitle"].Value, _game.Title)"
+                    height="167" width="100%" frameborder="0" loading="lazy"></iframe>
+        </section>
+    </article>
+}
+
+@code {
+    private Game? _game;
+
+    /// <summary>Identifiant du jeu dans l'URL.</summary>
+    [Parameter]
+    public string? Slug { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var games = await Catalog.GetGamesAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
+
+        _game = games.FirstOrDefault(game =>
+            string.Equals(game.Slug.Value, Slug, StringComparison.OrdinalIgnoreCase));
+
+        // Un slug inconnu doit répondre 404, pas 200 avec un message : les moteurs de
+        // recherche indexeraient sinon des pages fantômes.
+        if (_game is null && HttpContext is not null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        }
+    }
+
+    private string? Tagline => _game?.Tagline.For(CultureInfo.CurrentUICulture);
+
+    private string? Description => _game?.Description.For(CultureInfo.CurrentUICulture);
+
+    /// <summary>
+    /// Adresse du widget officiel itch.io, indexé par identifiant de jeu.
+    /// </summary>
+    /// <remarks>
+    /// Volontairement sans attribut <c>sandbox</c> : privé de <c>allow-same-origin</c>, le
+    /// widget d'itch.io s'affiche vide, et le lui accorder retirerait au sandbox l'essentiel
+    /// de son effet. On assume la confiance faite au service vers lequel le site renvoie déjà
+    /// tous ses visiteurs.
+    /// </remarks>
+    private string EmbedUrl => $"https://itch.io/embed/{_game!.Id}";
+
+    private static IEnumerable<string> SplitParagraphs(string text) =>
+        text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}

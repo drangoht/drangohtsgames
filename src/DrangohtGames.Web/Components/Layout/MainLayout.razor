@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+
+<a class="skip-link" href="#main">@T["Nav.SkipToContent"]</a>
+
+<header class="site-header">
+    <div class="shell site-header__inner">
+        <a class="brand" href="/">
+            <span class="brand__mark" aria-hidden="true">▲</span>
+            <span class="brand__name">@Site.Value.Name</span>
+        </a>
+
+        <nav class="site-nav" aria-label="@T["Nav.Games"]">
+            <NavLink class="site-nav__link" href="/" Match="NavLinkMatch.All">@T["Nav.Games"]</NavLink>
+            <NavLink class="site-nav__link" href="/about">@T["Nav.About"]</NavLink>
+        </nav>
+
+        <CultureSelector />
+    </div>
+</header>
+
+<main id="main" class="shell site-main">
+    @Body
+</main>
+
+<footer class="site-footer">
+    <div class="shell site-footer__inner">
+        <p class="site-footer__text">© @DateTimeOffset.UtcNow.Year @Site.Value.Name — @T["Footer.Rights"]</p>
+        <ul class="site-footer__links">
+            <li>
+                <a href="@Site.Value.ItchProfileUrl" rel="noopener noreferrer external" target="_blank">
+                    @T["Footer.ItchProfile"]
+                </a>
+            </li>
+            @if (!string.IsNullOrWhiteSpace(Site.Value.GitHubUrl))
+            {
+                <li>
+                    <a href="@Site.Value.GitHubUrl" rel="noopener noreferrer external" target="_blank">GitHub</a>
+                </li>
+            }
+        </ul>
+    </div>
+</footer>

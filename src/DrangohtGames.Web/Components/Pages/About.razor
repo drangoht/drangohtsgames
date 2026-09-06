@@ -1,0 +1,32 @@
+@page "/about"
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+
+<PageTitle>@T["About.Title"] — @Site.Value.Name</PageTitle>
+
+<h1 class="page-title">@T["About.Title"]</h1>
+
+<div class="prose">
+    <h2>@T["About.Heading"]</h2>
+    <p>@T["About.Body"]</p>
+
+    @if (!string.IsNullOrWhiteSpace(Site.Value.ContactEmail))
+    {
+        <h2>@T["About.Contact"]</h2>
+        <p>@T["About.ContactBody"]</p>
+        <p><a class="button button--primary" href="mailto:@Site.Value.ContactEmail">@Site.Value.ContactEmail</a></p>
+    }
+
+    <h2>@T["About.Links"]</h2>
+    <ul>
+        <li>
+            <a href="@Site.Value.ItchProfileUrl" rel="noopener noreferrer external" target="_blank">itch.io</a>
+        </li>
+        @if (!string.IsNullOrWhiteSpace(Site.Value.GitHubUrl))
+        {
+            <li>
+                <a href="@Site.Value.GitHubUrl" rel="noopener noreferrer external" target="_blank">GitHub</a>
+            </li>
+        }
+    </ul>
+</div>

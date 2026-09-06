@@ -1,0 +1,38 @@
+{
+  "$comment": [
+    "Contenu que l'API itch.io ne fournit pas : tags, moteur, description longue,",
+    "captures d'écran et traductions françaises.",
+    "",
+    "La clé est le slug du jeu, c'est-à-dire le dernier segment de son URL itch.io :",
+    "https://drangoht.itch.io/mon-super-jeu  ->  \"mon-super-jeu\".",
+    "",
+    "Tout est facultatif. Un jeu absent de ce fichier s'affiche avec les seules données",
+    "itch.io ; une entrée partielle complète ces données sans jamais les effacer.",
+    "Les slugs qui ne correspondent à aucun jeu publié sont signalés au démarrage.",
+    "",
+    "Les sauts de ligne dans une description produisent des paragraphes distincts."
+  ],
+
+  "games": {
+    "exemple-a-remplacer": {
+      "tags": ["Arcade", "Runner"],
+      "engine": "Godot",
+      "tagline": {
+        "fr": "Traduction française de l'accroche courte d'itch.io"
+      },
+      "description": {
+        "en": "First paragraph of the long description.\nSecond paragraph.",
+        "fr": "Premier paragraphe de la description longue.\nDeuxième paragraphe."
+      },
+      "screenshots": [
+        {
+          "url": "https://img.itch.zone/.../capture-1.png",
+          "caption": {
+            "en": "The first level",
+            "fr": "Le premier niveau"
+          }
+        }
+      ]
+    }
+  }
+}

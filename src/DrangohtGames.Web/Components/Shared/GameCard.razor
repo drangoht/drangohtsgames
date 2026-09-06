@@ -1,0 +1,45 @@
+@inject IStringLocalizer<SharedResources> T
+
+<article class="card">
+    <a class="card__link" href="/games/@Game.Slug.Value">
+        <div class="card__cover">
+            @if (Game.CoverUrl is not null)
+            {
+                @* Les couvertures itch.io sont hors du flux critique : chargement différé. *@
+                <img src="@Game.CoverUrl" alt="" loading="lazy" decoding="async" width="315" height="250" />
+            }
+            else
+            {
+                <div class="card__cover--placeholder" aria-hidden="true">@Initial</div>
+            }
+        </div>
+
+        <div class="card__body">
+            <h2 class="card__title">@Game.Title</h2>
+
+            @if (Tagline is not null)
+            {
+                <p class="card__tagline">@Tagline</p>
+            }
+        </div>
+    </a>
+
+    <div class="card__meta">
+        <span class="card__price @(Game.Price.IsFree ? "card__price--free" : null)">
+            @(Game.Price.IsFree ? T["Game.Free"].Value : Game.Price.ToDisplayString(CultureInfo.CurrentCulture))
+        </span>
+        <PlatformBadges Platforms="Game.Platforms" PlayableInBrowser="Game.IsEmbeddable" />
+    </div>
+</article>
+
+@code {
+    /// <summary>Jeu présenté par la carte.</summary>
+    [Parameter, EditorRequired]
+    public required Game Game { get; set; }
+
+    private string? Tagline => Game.Tagline.For(CultureInfo.CurrentUICulture);
+
+    private string Initial => Game.Title.Length > 0
+        ? Game.Title[..1].ToUpper(CultureInfo.CurrentCulture)
+        : "?";
+}

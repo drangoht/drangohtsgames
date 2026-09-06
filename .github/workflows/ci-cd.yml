@@ -1,0 +1,205 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      rollback_tag:
+        description: "Étiquette d'image à redéployer (SHA court). Vide = build normal."
+        required: false
+        type: string
+
+# Deux déploiements simultanés sur le même serveur se marcheraient dessus.
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: false
+
+# Le jeton n'a que les droits qu'on lui donne explicitement.
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  test:
+    name: 🧪 Build & tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: "**/*.csproj"
+
+      - name: Restore
+        run: dotnet restore src/DrangohtGames.slnx
+
+      # Le projet impose `TreatWarningsAsErrors` : un avertissement fait échouer ici,
+      # pas trois semaines plus tard.
+      - name: Build
+        run: dotnet build src/DrangohtGames.slnx --configuration Release --no-restore
+
+      - name: Format
+        run: dotnet format src/DrangohtGames.slnx --verify-no-changes --no-restore
+
+      - name: Tests
+        run: |
+          dotnet test src/DrangohtGames.slnx \
+            --configuration Release \
+            --no-build \
+            --logger "trx;LogFileName=tests.trx" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./artifacts/tests
+
+      - name: Publier les résultats de test
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./artifacts/tests
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  build-image:
+    name: 🛠️ Image Docker
+    needs: test # ← rien ne se construit tant que la suite n'est pas verte
+    # Un retour arrière ne reconstruit rien : il redéploie une image déjà publiée.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && inputs.rollback_tag == ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write # publication sur GHCR avec le jeton natif, sans secret à gérer
+    outputs:
+      image_tag: ${{ steps.meta.outputs.short_sha }}
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Connexion au registre
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculer les étiquettes
+        id: meta
+        run: |
+          short_sha="$(git rev-parse --short HEAD)"
+          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+          # Le nom de dépôt peut contenir des majuscules, pas une référence d'image.
+          echo "image=${REGISTRY}/$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      # Étiquette immuable par commit *en plus* de `latest` : sans elle, aucun retour
+      # arrière n'est possible et `docker pull latest` peut resservir l'ancienne image.
+      - name: Construire et publier
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.short_sha }}
+            ${{ steps.meta.outputs.image }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: 🚀 Déploiement
+    needs: build-image
+    if: always() && github.ref == 'refs/heads/main' && (needs.build-image.result == 'success' || inputs.rollback_tag != '')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Choisir l'étiquette à déployer
+        id: target
+        run: |
+          tag="${{ inputs.rollback_tag }}"
+          if [ -z "$tag" ]; then
+            tag="${{ needs.build-image.outputs.image_tag }}"
+          fi
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "Déploiement de l'étiquette ${tag}"
+
+      # Le compose est la source de vérité du déploiement : il est copié à chaque fois,
+      # de sorte que le serveur ne diverge jamais du dépôt.
+      - name: Copier le compose sur le serveur
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: docker-compose.yml
+          target: ${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}
+
+      - name: Déployer
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_TAG: ${{ steps.target.outputs.tag }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: IMAGE_TAG
+          script_stop: true # une commande qui échoue arrête le script
+          script: |
+            set -euo pipefail
+            cd "${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}"
+
+            echo "${{ secrets.GITHUB_TOKEN }}" \
+              | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+            # `.env` porte le secret ITCHIO_API_KEY et n'est jamais recopié par la CI :
+            # on n'y écrit que l'étiquette à déployer.
+            touch .env
+            grep -v '^IMAGE_TAG=' .env > .env.next || true
+            echo "IMAGE_TAG=${IMAGE_TAG}" >> .env.next
+            mv .env.next .env
+
+            docker compose pull
+            # `up -d` recrée uniquement ce qui a changé — l'ancien conteneur ne s'arrête
+            # qu'une fois le nouveau prêt, au lieu d'un `stop`/`rm`/`run` à froid.
+            docker compose up -d --remove-orphans
+
+            docker logout ${{ env.REGISTRY }}
+
+            # Sans cela, le disque du VPS se remplit d'images obsolètes en quelques mois.
+            docker image prune -af --filter "until=168h"
+
+      # Un déploiement qui « réussit » sans que le site réponde n'est pas un déploiement.
+      - name: Vérifier que le site répond
+        run: |
+          url="${{ vars.SITE_URL || format('http://{0}:8080', secrets.VPS_HOST) }}"
+          for attempt in $(seq 1 12); do
+            code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}/health" || true)"
+            if [ "$code" = "200" ]; then
+              echo "Le site répond (tentative ${attempt})."
+              exit 0
+            fi
+            echo "Tentative ${attempt} : statut ${code:-aucune réponse}, nouvel essai dans 5 s."
+            sleep 5
+          done
+          echo "::error::Le site ne répond pas sur ${url}/health après le déploiement."
+          exit 1

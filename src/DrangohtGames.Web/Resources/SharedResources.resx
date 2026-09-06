@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Nav.Games" xml:space="preserve">
+    <value>Games</value>
+  </data>
+  <data name="Nav.About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Nav.SkipToContent" xml:space="preserve">
+    <value>Skip to content</value>
+  </data>
+  <data name="Home.Title" xml:space="preserve">
+    <value>Games</value>
+  </data>
+  <data name="Home.Intro" xml:space="preserve">
+    <value>Everything I have released on itch.io, in one place.</value>
+  </data>
+  <data name="Home.Empty" xml:space="preserve">
+    <value>No games to show right now.</value>
+  </data>
+  <data name="Home.EmptyFiltered" xml:space="preserve">
+    <value>No game matches these filters.</value>
+  </data>
+  <data name="Home.ClearFilters" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="Home.Unavailable" xml:space="preserve">
+    <value>The catalogue is temporarily unavailable. Please try again in a few minutes.</value>
+  </data>
+  <data name="Home.GameCount" xml:space="preserve">
+    <value>{0} games</value>
+  </data>
+  <data name="Home.GameCountOne" xml:space="preserve">
+    <value>1 game</value>
+  </data>
+  <data name="Filter.Legend" xml:space="preserve">
+    <value>Filter the catalogue</value>
+  </data>
+  <data name="Filter.Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Filter.SearchPlaceholder" xml:space="preserve">
+    <value>Title, tag, description...</value>
+  </data>
+  <data name="Filter.Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="Filter.Engine" xml:space="preserve">
+    <value>Engine</value>
+  </data>
+  <data name="Filter.Platform" xml:space="preserve">
+    <value>Platform</value>
+  </data>
+  <data name="Filter.Any" xml:space="preserve">
+    <value>Any</value>
+  </data>
+  <data name="Filter.Apply" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="Game.Free" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="Game.PlayInBrowser" xml:space="preserve">
+    <value>Play in browser</value>
+  </data>
+  <data name="Game.ViewOnItch" xml:space="preserve">
+    <value>View on itch.io</value>
+  </data>
+  <data name="Game.GetItOnItch" xml:space="preserve">
+    <value>Get it on itch.io</value>
+  </data>
+  <data name="Game.Released" xml:space="preserve">
+    <value>Released {0}</value>
+  </data>
+  <data name="Game.ReleaseDate" xml:space="preserve">
+    <value>Release date</value>
+  </data>
+  <data name="Game.Price" xml:space="preserve">
+    <value>Price</value>
+  </data>
+  <data name="Game.Platforms" xml:space="preserve">
+    <value>Platforms</value>
+  </data>
+  <data name="Game.Engine" xml:space="preserve">
+    <value>Engine</value>
+  </data>
+  <data name="Game.Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Game.Screenshots" xml:space="preserve">
+    <value>Screenshots</value>
+  </data>
+  <data name="Game.About" xml:space="preserve">
+    <value>About this game</value>
+  </data>
+  <data name="Game.NoDescription" xml:space="preserve">
+    <value>No description yet - the itch.io page has all the details.</value>
+  </data>
+  <data name="Game.BackToGames" xml:space="preserve">
+    <value>Back to all games</value>
+  </data>
+  <data name="Game.EmbedTitle" xml:space="preserve">
+    <value>itch.io widget for {0}</value>
+  </data>
+  <data name="Platform.Windows" xml:space="preserve">
+    <value>Windows</value>
+  </data>
+  <data name="Platform.Linux" xml:space="preserve">
+    <value>Linux</value>
+  </data>
+  <data name="Platform.MacOs" xml:space="preserve">
+    <value>macOS</value>
+  </data>
+  <data name="Platform.Android" xml:space="preserve">
+    <value>Android</value>
+  </data>
+  <data name="Platform.Browser" xml:space="preserve">
+    <value>Browser</value>
+  </data>
+  <data name="About.Title" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="About.Heading" xml:space="preserve">
+    <value>Hi, I am Drangoht.</value>
+  </data>
+  <data name="About.Body" xml:space="preserve">
+    <value>I build small games in my spare time and release them on itch.io. This site lists them all, pulled straight from my itch.io account.</value>
+  </data>
+  <data name="About.Contact" xml:space="preserve">
+    <value>Get in touch</value>
+  </data>
+  <data name="About.ContactBody" xml:space="preserve">
+    <value>The quickest way to reach me is by email.</value>
+  </data>
+  <data name="About.Links" xml:space="preserve">
+    <value>Elsewhere</value>
+  </data>
+  <data name="NotFound.Title" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
+  <data name="NotFound.Body" xml:space="preserve">
+    <value>This page does not exist, or no longer does.</value>
+  </data>
+  <data name="NotFound.Home" xml:space="preserve">
+    <value>Back to the games</value>
+  </data>
+  <data name="Error.Title" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+  <data name="Error.Body" xml:space="preserve">
+    <value>An unexpected error occurred while serving this page.</value>
+  </data>
+  <data name="Error.RequestId" xml:space="preserve">
+    <value>Request ID: {0}</value>
+  </data>
+  <data name="Footer.Rights" xml:space="preserve">
+    <value>Games and artwork are mine. Built with .NET and Blazor.</value>
+  </data>
+  <data name="Footer.ItchProfile" xml:space="preserve">
+    <value>itch.io profile</value>
+  </data>
+  <data name="Language.Label" xml:space="preserve">
+    <value>Language</value>
+  </data>
+</root>

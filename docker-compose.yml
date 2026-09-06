@@ -1,0 +1,46 @@
+services:
+  web:
+    # L'image est identifiée par un condensat immuable poussé par la CI (`IMAGE_TAG`),
+    # pas par `latest` : sur le serveur, on sait exactement quelle version tourne, et
+    # revenir en arrière consiste à changer une variable.
+    image: ${IMAGE:-ghcr.io/drangoht/drangohtgames}:${IMAGE_TAG:-latest}
+    container_name: drangohtgames
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Le double tiret bas est la convention .NET pour descendre dans une section.
+      ItchIo__ApiKey: ${ITCHIO_API_KEY:?ITCHIO_API_KEY est requis}
+      ItchIo__Currency: ${ITCHIO_CURRENCY:-USD}
+      ItchIo__CacheDuration: ${ITCHIO_CACHE_DURATION:-00:30:00}
+      Snapshot__Directory: /var/lib/drangohtgames
+      Site__Name: ${SITE_NAME:-Drangoht Games}
+      Site__ItchProfileUrl: ${SITE_ITCH_URL:-https://drangoht.itch.io/}
+      Site__ContactEmail: ${SITE_CONTACT_EMAIL:-}
+      Site__GitHubUrl: ${SITE_GITHUB_URL:-}
+
+    volumes:
+      # Le dernier catalogue connu survit aux redéploiements — c'est justement lors d'un
+      # redémarrage, cache mémoire vidé, qu'une panne d'itch.io ferait le plus mal.
+      - snapshot:/var/lib/drangohtgames
+
+    ports:
+      - "${HTTP_PORT:-8080}:8080"
+
+    # Durcissement : l'application n'écrit que dans son volume d'instantané.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  snapshot:

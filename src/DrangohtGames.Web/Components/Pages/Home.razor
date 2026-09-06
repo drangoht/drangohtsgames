@@ -1,0 +1,162 @@
+@page "/"
+@inject IGameCatalog Catalog
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+
+<PageTitle>@Site.Value.Name</PageTitle>
+<HeadContent>
+    <meta name="description" content="@T["Home.Intro"]" />
+</HeadContent>
+
+<h1 class="page-title">@T["Home.Title"]</h1>
+<p class="page-intro">@T["Home.Intro"]</p>
+
+@if (_allGames.Count == 0)
+{
+    <p class="notice notice--warning" role="status">@T["Home.Unavailable"]</p>
+}
+else
+{
+    @* Formulaire GET : chaque sélection produit une URL partageable, et l'ensemble
+       fonctionne sans JavaScript — condition d'un rendu serveur statique. *@
+    <form method="get" class="filters" role="search">
+        <fieldset>
+            <legend class="visually-hidden">@T["Filter.Legend"]</legend>
+
+            <div class="filters__field filters__field--grow">
+                <label for="q">@T["Filter.Search"]</label>
+                <input type="search" id="q" name="q" value="@Search"
+                       placeholder="@T["Filter.SearchPlaceholder"]" autocomplete="off" />
+            </div>
+
+            @if (_availableTags.Count > 0)
+            {
+                <div class="filters__field">
+                    <label for="tag">@T["Filter.Tag"]</label>
+                    <select id="tag" name="tag">
+                        <option value="">@T["Filter.Any"]</option>
+                        @foreach (var tag in _availableTags)
+                        {
+                            <option value="@tag" selected="@IsSelected(Tag, tag)">@tag</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            @if (_availableEngines.Count > 0)
+            {
+                <div class="filters__field">
+                    <label for="engine">@T["Filter.Engine"]</label>
+                    <select id="engine" name="engine">
+                        <option value="">@T["Filter.Any"]</option>
+                        @foreach (var engine in _availableEngines)
+                        {
+                            <option value="@engine" selected="@IsSelected(Engine, engine)">@engine</option>
+                        }
+                    </select>
+                </div>
+            }
+
+            <div class="filters__field">
+                <label for="platform">@T["Filter.Platform"]</label>
+                <select id="platform" name="platform">
+                    <option value="">@T["Filter.Any"]</option>
+                    @foreach (var (value, key) in PlatformChoices)
+                    {
+                        <option value="@value" selected="@IsSelected(Platform, value)">@T[key]</option>
+                    }
+                </select>
+            </div>
+
+            <div class="filters__actions">
+                <button type="submit" class="button button--primary">@T["Filter.Apply"]</button>
+                @if (_filter.IsActive)
+                {
+                    <a class="button button--ghost" href="/">@T["Home.ClearFilters"]</a>
+                }
+            </div>
+        </fieldset>
+    </form>
+
+    <p class="results-count" role="status">
+        @(_visibleGames.Count == 1 ? T["Home.GameCountOne"].Value : string.Format(CultureInfo.CurrentCulture, T["Home.GameCount"].Value, _visibleGames.Count))
+    </p>
+
+    @if (_visibleGames.Count == 0)
+    {
+        <p class="notice">@T["Home.EmptyFiltered"]</p>
+    }
+    else
+    {
+        <ul class="grid">
+            @foreach (var game in _visibleGames)
+            {
+                <li class="grid__item">
+                    <GameCard Game="game" />
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    private static readonly (string Value, string ResourceKey)[] PlatformChoices =
+    [
+        (nameof(GamePlatforms.Windows), "Platform.Windows"),
+        (nameof(GamePlatforms.Linux), "Platform.Linux"),
+        (nameof(GamePlatforms.MacOs), "Platform.MacOs"),
+        (nameof(GamePlatforms.Android), "Platform.Android"),
+    ];
+
+    private IReadOnlyList<Game> _allGames = [];
+    private IReadOnlyList<Game> _visibleGames = [];
+    private IReadOnlyList<string> _availableTags = [];
+    private IReadOnlyList<string> _availableEngines = [];
+    private GameFilter _filter = GameFilter.Empty;
+
+    /// <summary>Contexte de la requête en cours, fourni par le rendu serveur statique.</summary>
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = "q")]
+    private string? Search { get; set; }
+
+    [SupplyParameterFromQuery(Name = "tag")]
+    private string? Tag { get; set; }
+
+    [SupplyParameterFromQuery(Name = "engine")]
+    private string? Engine { get; set; }
+
+    [SupplyParameterFromQuery(Name = "platform")]
+    private string? Platform { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _allGames = await Catalog.GetGamesAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
+        _availableTags = GameFilter.AvailableTagsOf(_allGames);
+        _availableEngines = GameFilter.AvailableEnginesOf(_allGames);
+
+        _filter = new GameFilter
+        {
+            SearchTerm = Search,
+            Tag = Tag,
+            Engine = Engine,
+            Platform = ParsePlatform(Platform),
+        };
+
+        _visibleGames = _filter.Apply(_allGames);
+    }
+
+    /// <summary>
+    /// Une plateforme inconnue dans l'URL est ignorée plutôt que de faire échouer la page :
+    /// le paramètre vient du visiteur, pas de nous.
+    /// </summary>
+    private static GamePlatforms? ParsePlatform(string? value) =>
+        Enum.TryParse<GamePlatforms>(value, ignoreCase: true, out var platform)
+        && platform != GamePlatforms.None
+            ? platform
+            : null;
+
+    private static bool IsSelected(string? current, string candidate) =>
+        string.Equals(current, candidate, StringComparison.OrdinalIgnoreCase);
+}

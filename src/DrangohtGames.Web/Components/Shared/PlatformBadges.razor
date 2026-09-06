@@ -1,0 +1,33 @@
+@inject IStringLocalizer<SharedResources> T
+
+<ul class="badges" aria-label="@T["Game.Platforms"]">
+    @if (PlayableInBrowser)
+    {
+        <li class="badge badge--browser">@T["Platform.Browser"]</li>
+    }
+    @foreach (var (platform, key) in Labels)
+    {
+        @if (Platforms.HasFlag(platform))
+        {
+            <li class="badge">@T[key]</li>
+        }
+    }
+</ul>
+
+@code {
+    private static readonly (GamePlatforms Platform, string ResourceKey)[] Labels =
+    [
+        (GamePlatforms.Windows, "Platform.Windows"),
+        (GamePlatforms.Linux, "Platform.Linux"),
+        (GamePlatforms.MacOs, "Platform.MacOs"),
+        (GamePlatforms.Android, "Platform.Android"),
+    ];
+
+    /// <summary>Plateformes téléchargeables du jeu.</summary>
+    [Parameter, EditorRequired]
+    public GamePlatforms Platforms { get; set; }
+
+    /// <summary>Ajoute le badge « navigateur » pour un jeu jouable en ligne.</summary>
+    [Parameter]
+    public bool PlayableInBrowser { get; set; }
+}

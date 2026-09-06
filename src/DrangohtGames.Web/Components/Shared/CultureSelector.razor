@@ -1,0 +1,40 @@
+@inject IStringLocalizer<SharedResources> T
+@inject NavigationManager Navigation
+
+@* Un formulaire POST par langue : le choix persiste dans un cookie, et le site reste
+   utilisable sans JavaScript — cohérent avec un rendu serveur statique. *@
+<div class="culture" role="group" aria-label="@T["Language.Label"]">
+    @foreach (var culture in SupportedCultures.All)
+    {
+        var isCurrent = string.Equals(
+            culture,
+            CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
+            StringComparison.OrdinalIgnoreCase);
+
+        <form method="post" action="/culture" class="culture__form">
+            <AntiforgeryToken />
+            <input type="hidden" name="culture" value="@culture" />
+            <input type="hidden" name="redirectUri" value="@CurrentRelativeUri" />
+            <button type="submit"
+                    class="culture__button @(isCurrent ? "culture__button--current" : null)"
+                    aria-current="@(isCurrent ? "true" : null)"
+                    lang="@culture">
+                @SupportedCultures.DisplayNameOf(culture)
+            </button>
+        </form>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Chemin courant, pour revenir sur la même page après le changement de langue.
+    /// </summary>
+    private string CurrentRelativeUri
+    {
+        get
+        {
+            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+            return relative.Length == 0 ? "/" : "/" + relative;
+        }
+    }
+}
