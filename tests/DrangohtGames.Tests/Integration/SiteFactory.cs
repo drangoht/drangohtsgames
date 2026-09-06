@@ -45,7 +45,6 @@ internal sealed class SiteFactory : WebApplicationFactory<Program>
                 ["ItchIo:Currency"] = "USD",
                 ["Snapshot:Directory"] = _snapshotDirectory,
                 ["Site:Name"] = "Drangoht Games",
-                ["Site:ContactEmail"] = "contact@example.com",
             }));
 
         builder.ConfigureServices(services =>

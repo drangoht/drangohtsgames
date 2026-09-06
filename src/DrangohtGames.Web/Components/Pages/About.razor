@@ -10,13 +10,6 @@
     <h2>@T["About.Heading"]</h2>
     <p>@T["About.Body"]</p>
 
-    @if (!string.IsNullOrWhiteSpace(Site.Value.ContactEmail))
-    {
-        <h2>@T["About.Contact"]</h2>
-        <p>@T["About.ContactBody"]</p>
-        <p><a class="button button--primary" href="mailto:@Site.Value.ContactEmail">@Site.Value.ContactEmail</a></p>
-    }
-
     <h2>@T["About.Links"]</h2>
     <ul>
         <li>

@@ -176,12 +176,6 @@
   <data name="About.Body" xml:space="preserve">
     <value>Je fabrique de petits jeux sur mon temps libre et je les publie sur itch.io. Ce site les recense tous, directement depuis mon compte itch.io.</value>
   </data>
-  <data name="About.Contact" xml:space="preserve">
-    <value>Me contacter</value>
-  </data>
-  <data name="About.ContactBody" xml:space="preserve">
-    <value>Le plus rapide reste le courriel.</value>
-  </data>
   <data name="About.Links" xml:space="preserve">
     <value>Ailleurs</value>
   </data>

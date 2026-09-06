@@ -17,10 +17,6 @@ public sealed class SiteOptions
     [Url]
     public string ItchProfileUrl { get; init; } = "https://drangoht.itch.io/";
 
-    /// <summary>Adresse de contact, affichée sur la page « À propos ».</summary>
-    [EmailAddress]
-    public string? ContactEmail { get; init; }
-
     /// <summary>Profil GitHub, facultatif.</summary>
     [Url]
     public string? GitHubUrl { get; init; }

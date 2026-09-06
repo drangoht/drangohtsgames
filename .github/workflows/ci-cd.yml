@@ -178,7 +178,6 @@ jobs:
           HTTP_PORT: ${{ vars.HTTP_PORT || '8080' }}
           SITE_NAME: ${{ vars.SITE_NAME || 'Drangoht Games' }}
           SITE_ITCH_URL: ${{ vars.SITE_ITCH_URL || 'https://drangoht.itch.io/' }}
-          SITE_CONTACT_EMAIL: ${{ vars.SITE_CONTACT_EMAIL }}
           SITE_GITHUB_URL: ${{ vars.SITE_GITHUB_URL }}
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -186,7 +185,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           # Les valeurs voyagent par l'environnement, pas interpolées dans le script :
           # elles n'apparaissent donc jamais en clair dans la trace d'exécution.
-          envs: IMAGE,IMAGE_TAG,ITCHIO_API_KEY,ITCHIO_CURRENCY,ITCHIO_CACHE_DURATION,HTTP_PORT,SITE_NAME,SITE_ITCH_URL,SITE_CONTACT_EMAIL,SITE_GITHUB_URL
+          envs: IMAGE,IMAGE_TAG,ITCHIO_API_KEY,ITCHIO_CURRENCY,ITCHIO_CACHE_DURATION,HTTP_PORT,SITE_NAME,SITE_ITCH_URL,SITE_GITHUB_URL
           script: |
             set -euo pipefail
             cd "${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}"
@@ -210,7 +209,6 @@ jobs:
               printf 'HTTP_PORT=%s\n'             "$HTTP_PORT"
               printf 'SITE_NAME=%s\n'             "$SITE_NAME"
               printf 'SITE_ITCH_URL=%s\n'         "$SITE_ITCH_URL"
-              printf 'SITE_CONTACT_EMAIL=%s\n'    "$SITE_CONTACT_EMAIL"
               printf 'SITE_GITHUB_URL=%s\n'       "$SITE_GITHUB_URL"
             } > .env
             chmod 600 .env
@@ -242,7 +240,7 @@ jobs:
       # Un déploiement qui « réussit » sans que le site réponde n'est pas un déploiement.
       - name: Vérifier que le site répond
         run: |
-          url="${{ vars.SITE_URL || format('http://{0}:8080', secrets.VPS_HOST) }}"
+          url="${{ secrets.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
           for attempt in $(seq 1 12); do
             code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}/health" || true)"
             if [ "$code" = "200" ]; then

@@ -41,7 +41,7 @@ docker compose up -d
 |---|---|
 | `/` | Grille des jeux, avec recherche et filtres par tag, moteur et plateforme |
 | `/games/{slug}` | Fiche du jeu : description, captures, tags, widget itch.io embarqué |
-| `/about` | Présentation et contact |
+| `/about` | Présentation et liens |
 | `/health` | Sonde de vivacité, volontairement indépendante d'itch.io |
 
 Les filtres passent par la chaîne de requête : une sélection produit une **URL partageable**,
@@ -105,7 +105,7 @@ Toutes les clés se surchargent par variable d'environnement, en remplaçant `:`
 | `ItchIo:Timeout` | `00:00:10` | Délai maximal d'un appel, reprises comprises |
 | `Snapshot:Directory` | `/var/lib/drangohtgames` | Instantané de repli — **monter un volume** |
 | `Editorial:FilePath` | `data/games.json` | Fichier de contenu éditorial |
-| `Site:Name`, `Site:ItchProfileUrl`, `Site:ContactEmail`, `Site:GitHubUrl` | voir `appsettings.json` | Identité du site |
+| `Site:Name`, `Site:ItchProfileUrl`, `Site:GitHubUrl` | voir `appsettings.json` | Identité du site |
 
 La configuration est validée **au démarrage** : une clé manquante empêche le conteneur de
 démarrer, plutôt que de produire une page d'erreur à la première visite.
@@ -150,8 +150,7 @@ endroit.
 
 **Variables** (toutes facultatives, valeurs par défaut dans le workflow) : `SITE_URL`,
 `DEPLOY_PATH` (défaut `/opt/drangohtgames`), `SITE_NAME`, `SITE_ITCH_URL`,
-`SITE_CONTACT_EMAIL`, `SITE_GITHUB_URL`, `HTTP_PORT`, `ITCHIO_CURRENCY`,
-`ITCHIO_CACHE_DURATION`.
+`SITE_GITHUB_URL`, `HTTP_PORT`, `ITCHIO_CURRENCY`, `ITCHIO_CACHE_DURATION`.
 
 Aucun secret de registre à gérer : GHCR s'authentifie avec le `GITHUB_TOKEN` natif.
 

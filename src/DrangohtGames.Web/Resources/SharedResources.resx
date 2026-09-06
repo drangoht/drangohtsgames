@@ -176,12 +176,6 @@
   <data name="About.Body" xml:space="preserve">
     <value>I build small games in my spare time and release them on itch.io. This site lists them all, pulled straight from my itch.io account.</value>
   </data>
-  <data name="About.Contact" xml:space="preserve">
-    <value>Get in touch</value>
-  </data>
-  <data name="About.ContactBody" xml:space="preserve">
-    <value>The quickest way to reach me is by email.</value>
-  </data>
   <data name="About.Links" xml:space="preserve">
     <value>Elsewhere</value>
   </data>
