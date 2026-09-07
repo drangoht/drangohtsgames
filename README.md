@@ -180,6 +180,58 @@ gh secret set VPS_SSH_KEY    --repo drangoht/drangohtsgames
 Les valeurs sont transmises au serveur par l'environnement SSH, jamais interpolées dans le
 script : elles n'apparaissent donc pas dans la trace d'exécution.
 
+> **Secret ou variable ?** Le workflow lit les secrets dans `secrets.*` et les variables
+> dans `vars.*` : une valeur enregistrée du mauvais côté est **silencieusement ignorée**,
+> les défauts s'appliquent, et rien ne le signale. Seules les quatre valeurs du tableau
+> ci-dessus sont des secrets. Tout le reste — à commencer par `SITE_URL` — est une
+> variable : une URL publique enregistrée en secret est masquée en `***` dans la trace, ce
+> qui rend le moindre diagnostic impossible (`Could not resolve host: ***`).
+
+### Publier le site derrière nginx
+
+Le conteneur expose l'application **en HTTP clair** sur le port `8081` de l'hôte. Il ne
+porte aucun certificat : le TLS s'arrête au reverse proxy.
+
+Prérequis, dans cet ordre — un certificat ne peut pas être délivré avant que le nom résolve :
+
+1. un enregistrement DNS `A` du sous-domaine vers l'adresse du serveur (et un `AAAA`
+   **seulement** si le serveur répond vraiment en IPv6 : Let's Encrypt la privilégie et
+   échouerait sinon) ;
+2. `sudo certbot --nginx -d <domaine>`, qui crée le vhost et le certificat en une passe.
+
+Le `location` généré par Certbot est à remplacer par celui-ci :
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:8081;
+
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_http_version 1.1;
+}
+```
+
+Chaque ligne répare une panne constatée :
+
+| | |
+|---|---|
+| `http://`, pas `https://` | Kestrel écoute en clair dans le conteneur. Un `proxy_pass https://` provoque un **502** : nginx tente un handshake TLS en face d'un serveur qui n'en fait pas. |
+| `127.0.0.1`, pas `localhost` | `localhost` peut se résoudre en `::1` d'abord ; l'adresse littérale supprime cet aléa. |
+| Les quatre `proxy_set_header` | `Program.cs` appelle `UseForwardedHeaders`. Sans eux, l'application se croit servie en HTTP clair sur `127.0.0.1:8081` : plus d'en-tête HSTS, cookie antiforgery sans l'attribut `secure`, et URL absolues fausses. |
+
+Vérification — les deux doivent répondre `200` :
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' https://<domaine>/health
+ssh <serveur> "curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8081/health"
+```
+
+Le déploiement fait lui-même la seconde vérification à chaque exécution : si l'application
+répond localement mais pas publiquement, la panne est dans le proxy, le DNS ou le
+certificat — jamais dans le conteneur.
+
 ### Revenir à une version précédente
 
 Chaque image est étiquetée par le SHA court du commit, en plus de `latest`. Lancer le
@@ -191,7 +243,7 @@ rien n'est reconstruit, l'image déjà publiée est redéployée.
 ## Développement
 
 ```bash
-dotnet test  --solution src/DrangohtGames.slnx            # 91 tests
+dotnet test  --solution src/DrangohtGames.slnx            # 100 tests
 dotnet format src/DrangohtGames.slnx --verify-no-changes  # avant commit
 
 # Boucle rapide : tout sauf les tests d'intégration
