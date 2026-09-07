@@ -247,6 +247,18 @@ jobs:
               exit 1
             fi
 
+            # Sonde locale, depuis le serveur lui-même : elle sépare « l'application ne
+            # répond pas » de « la route publique ne mène pas jusqu'à elle ». Sans elle,
+            # une panne applicative et un reverse proxy mal configuré échouent de la même
+            # façon à l'étape suivante, sans rien dire de la cause.
+            if ! curl -fsS -o /dev/null --max-time 5 --retry 10 --retry-delay 2 --retry-connrefused "http://localhost:${HTTP_PORT}/health"; then
+              echo "ERREUR : l'application ne répond pas sur le port ${HTTP_PORT} du serveur."
+              docker compose ps
+              docker compose logs --tail 40
+              exit 1
+            fi
+            echo "L'application répond sur le port ${HTTP_PORT} du serveur."
+
             docker logout ${{ env.REGISTRY }}
 
             # Sans cela, le disque du VPS se remplit d'images obsolètes en quelques mois.
@@ -254,6 +266,8 @@ jobs:
 
       # Un déploiement qui « réussit » sans que le site réponde n'est pas un déploiement.
       - name: Vérifier que le site répond
+        env:
+          HTTP_PORT: ${{ vars.HTTP_PORT || '8081' }}
         run: |
           url="${{ secrets.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
           for attempt in $(seq 1 12); do
@@ -266,4 +280,7 @@ jobs:
             sleep 5
           done
           echo "::error::Le site ne répond pas sur ${url}/health après le déploiement."
+          echo "L'application, elle, a répondu sur le port ${HTTP_PORT} du serveur à l'étape"
+          echo "précédente : chercher la cause entre le DNS, le reverse proxy et le certificat,"
+          echo "pas dans le conteneur. Le proxy doit pointer sur ce port de la machine hôte."
           exit 1
