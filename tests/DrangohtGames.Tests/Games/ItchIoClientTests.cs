@@ -4,6 +4,7 @@ using DrangohtGames.Web.Games;
 using DrangohtGames.Web.Games.ItchIo;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Refit;
 using Shouldly;
 
 namespace DrangohtGames.Tests.Games;
@@ -72,12 +73,15 @@ public sealed class ItchIoClientTests
     }
     """;
 
+    // On branche le vrai client Refit sur un handler de test : la route, l'en-tête
+    // d'autorisation et la sérialisation traversés ici sont exactement ceux de production.
     private static ItchIoClient CreateClient(StubHttpMessageHandler handler, string apiKey = "cle-secrete")
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://itch.io/") };
+        var api = RestService.For<IItchIoApi>(http, ItchIoRefit.Settings);
         var options = Options.Create(new ItchIoOptions { ApiKey = apiKey, Currency = "USD" });
 
-        return new ItchIoClient(http, options, NullLogger<ItchIoClient>.Instance);
+        return new ItchIoClient(api, options, NullLogger<ItchIoClient>.Instance);
     }
 
     [Fact]
@@ -196,9 +200,13 @@ public sealed class ItchIoClientTests
     [Fact]
     public async Task GetPublishedGamesAsync_QuandLApiRepondUneErreur_LeveHttpRequestException()
     {
+        // Le port promet HttpRequestException. Refit lève son propre ApiException : laisser
+        // ce type remonter romprait le repli sur instantané, qui ne guette pas Refit.
         var client = CreateClient(StubHttpMessageHandler.ReturningStatus(HttpStatusCode.Unauthorized));
 
-        await Should.ThrowAsync<HttpRequestException>(
+        var exception = await Should.ThrowAsync<HttpRequestException>(
             () => client.GetPublishedGamesAsync(CancellationToken.None));
+
+        exception.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 }

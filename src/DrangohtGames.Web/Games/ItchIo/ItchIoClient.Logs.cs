@@ -1,6 +1,6 @@
 namespace DrangohtGames.Web.Games.ItchIo;
 
-public sealed partial class ItchIoClient
+internal sealed partial class ItchIoClient
 {
     [LoggerMessage(
         EventId = 1000,

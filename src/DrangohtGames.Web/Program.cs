@@ -36,17 +36,9 @@ builder.Services.AddOptions<SiteOptions>()
     .ValidateOnStart();
 
 // --- Accès à itch.io ----------------------------------------------------------------------
-builder.Services.AddHttpClient<IItchIoClient, ItchIoClient>((provider, client) =>
-    {
-        var options = provider.GetRequiredService<IOptions<ItchIoOptions>>().Value;
-
-        client.BaseAddress = new Uri("https://itch.io/");
-        client.Timeout = options.Timeout;
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("DrangohtGames/1.0 (+https://github.com/drangoht)");
-    })
-    // Reprise avec back-off et jitter, plus un disjoncteur : une lecture est idempotente,
-    // la retenter est sans risque.
-    .AddStandardResilienceHandler();
+// Le détail du transport (route, en-têtes, sérialisation, résilience) reste dans Games/ItchIo :
+// le composition root n'a pas à connaître le format de date d'un fournisseur tiers.
+builder.Services.AddItchIoCatalog();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<GameCatalogSnapshotStore>();

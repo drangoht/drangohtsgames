@@ -1,7 +1,5 @@
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Refit;
 
 namespace DrangohtGames.Web.Games.ItchIo;
 
@@ -10,24 +8,24 @@ namespace DrangohtGames.Web.Games.ItchIo;
 /// </summary>
 /// <remarks>
 /// C'est la seule classe du projet qui connaît le vocabulaire d'itch.io. Elle constitue la
-/// couche anti-corruption : au-delà, on ne manipule plus que des <see cref="Game"/>.
+/// couche anti-corruption : au-delà, on ne manipule plus que des <see cref="Game"/>. Le
+/// transport est délégué à <see cref="IItchIoApi"/> — ici, plus aucun appel réseau, que des
+/// décisions.
 /// </remarks>
-public sealed partial class ItchIoClient : IItchIoClient
+internal sealed partial class ItchIoClient : IItchIoClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
-
-    private readonly HttpClient _httpClient;
+    private readonly IItchIoApi _api;
     private readonly ItchIoOptions _options;
     private readonly ILogger<ItchIoClient> _logger;
 
-    /// <summary>Construit le client sur un <see cref="HttpClient"/> typé.</summary>
-    public ItchIoClient(HttpClient httpClient, IOptions<ItchIoOptions> options, ILogger<ItchIoClient> logger)
+    /// <summary>Construit le traducteur sur le contrat HTTP d'itch.io.</summary>
+    public ItchIoClient(IItchIoApi api, IOptions<ItchIoOptions> options, ILogger<ItchIoClient> logger)
     {
-        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(api);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _httpClient = httpClient;
+        _api = api;
         _options = options.Value;
         _logger = logger;
     }
@@ -35,20 +33,19 @@ public sealed partial class ItchIoClient : IItchIoClient
     /// <inheritdoc />
     public async Task<IReadOnlyList<Game>> GetPublishedGamesAsync(CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "api/1/key/my-games")
+        ItchIoGamesResponse payload;
+
+        try
         {
-            // La clé passe par l'en-tête : dans le chemin, elle atterrirait dans les
-            // journaux d'accès d'itch.io comme dans nos propres traces sortantes.
-            Headers = { Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey) },
-        };
-
-        using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var payload = await response.Content
-            .ReadFromJsonAsync<ItchIoGamesResponse>(SerializerOptions, cancellationToken)
-            .ConfigureAwait(false)
-            ?? new ItchIoGamesResponse();
+            payload = await _api.GetMyGamesAsync(_options.ApiKey, cancellationToken).ConfigureAwait(false);
+        }
+        catch (ApiException exception)
+        {
+            // Refit signale les codes HTTP d'erreur par son propre type, qui ne dérive pas de
+            // HttpRequestException. Le laisser remonter ferait sortir le SDK de ce dossier et
+            // priverait le catalogue de son repli sur instantané, qui guette ce type-là.
+            throw new HttpRequestException(exception.Message, exception, exception.StatusCode);
+        }
 
         // itch.io renvoie ses erreurs applicatives dans un corps 200 : sans ce contrôle,
         // une clé révoquée se lirait comme un compte sans jeu et effacerait l'instantané.
@@ -66,13 +63,6 @@ public sealed partial class ItchIoClient : IItchIoClient
         LogGamesFetched(_logger, payload.Games.Count, games.Length);
 
         return games;
-    }
-
-    private static JsonSerializerOptions CreateSerializerOptions()
-    {
-        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-        options.Converters.Add(new ItchIoDateTimeOffsetConverter());
-        return options;
     }
 
     /// <summary>

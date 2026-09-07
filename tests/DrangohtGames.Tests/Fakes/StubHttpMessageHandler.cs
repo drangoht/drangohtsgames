@@ -33,6 +33,13 @@ internal sealed class StubHttpMessageHandler : HttpMessageHandler
         CancellationToken cancellationToken)
     {
         Requests.Add(request);
-        return Task.FromResult(_respond(request));
+
+        var response = _respond(request);
+
+        // Un vrai pipeline HTTP rattache la requête à sa réponse ; Refit s'en sert pour
+        // construire ses ApiException. Sans cela, un 401 se muerait en InvalidOperationException.
+        response.RequestMessage = request;
+
+        return Task.FromResult(response);
     }
 }
