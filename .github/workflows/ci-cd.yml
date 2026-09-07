@@ -1,10 +1,24 @@
 name: CI/CD
 
+# Les chemins ignorés sont exactement ceux que `.dockerignore` exclut de l'image *et* qui
+# ne pilotent pas le déploiement : ils ne peuvent donc changer ni ce qui est construit, ni
+# ce qui est déployé. `docker-compose.yml` et `.github/` sont hors image eux aussi, mais
+# décrivent le déploiement — ils continuent de déclencher. GitHub ne saute l'exécution que
+# si *tous* les fichiers poussés correspondent : un commit mêlant documentation et code
+# déclenche normalement.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".claude/**"
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".claude/**"
   workflow_dispatch:
     inputs:
       rollback_tag:
