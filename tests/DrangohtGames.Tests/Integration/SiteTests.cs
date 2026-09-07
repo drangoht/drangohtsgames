@@ -194,6 +194,21 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
         response.Headers.Contains("Referrer-Policy").ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/games/x-moon")]
+    [InlineData("/about")]
+    public async Task LesPages_RepondentAUneRequeteHead(string chemin)
+    {
+        // Les services de supervision sondent en HEAD : une page qui n'y répond pas
+        // passe pour hors ligne alors qu'elle est servie normalement en GET.
+        using var requete = new HttpRequestMessage(HttpMethod.Head, chemin);
+
+        using var response = await CreateClient().SendAsync(requete, CancellationToken.None);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
     private static string ExtractAntiforgeryToken(string html)
     {
         const string marker = "name=\"__RequestVerificationToken\" value=\"";

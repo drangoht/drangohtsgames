@@ -115,7 +115,20 @@ app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocal
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>();
+// Les pages ne déclarent que GET et POST : une requête HEAD y récolte un 404, alors que
+// les services de supervision sondent avec cette méthode et signaleraient le site à terre.
+// Kestrel se charge d'omettre le corps de la réponse.
+app.MapRazorComponents<App>().Add(static endpoint =>
+{
+    var methodes = endpoint.Metadata.OfType<HttpMethodMetadata>().LastOrDefault();
+
+    if (methodes is not null
+        && methodes.HttpMethods.Contains(HttpMethods.Get)
+        && !methodes.HttpMethods.Contains(HttpMethods.Head))
+    {
+        endpoint.Metadata.Add(new HttpMethodMetadata([.. methodes.HttpMethods, HttpMethods.Head]));
+    }
+});
 
 // Sonde de vivacité : volontairement indépendante d'itch.io. Marquer le conteneur malsain
 // parce qu'une API tierce est tombée le ferait redémarrer en boucle sans rien réparer.
