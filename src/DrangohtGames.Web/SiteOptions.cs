@@ -18,6 +18,18 @@ public sealed class SiteOptions
     public string ItchProfileUrl { get; init; } = "https://drangoht.itch.io/";
 
     /// <summary>Profil GitHub, facultatif.</summary>
+    /// <remarks>
+    /// Le déploiement écrit toutes les clés du modèle dans l'environnement du conteneur,
+    /// renseignées ou non : une valeur absente arrive donc en chaîne vide, que
+    /// <see cref="UrlAttribute"/> refuse. La normaliser ici fait dire à « facultatif » ce
+    /// qu'il annonce, au lieu d'empêcher le démarrage.
+    /// </remarks>
     [Url]
-    public string? GitHubUrl { get; init; }
+    public string? GitHubUrl
+    {
+        get => _gitHubUrl;
+        init => _gitHubUrl = string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    private readonly string? _gitHubUrl;
 }

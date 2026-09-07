@@ -180,7 +180,7 @@ jobs:
           HTTP_PORT: ${{ vars.HTTP_PORT || '8081' }}
           SITE_NAME: ${{ vars.SITE_NAME || 'Drangoht Games' }}
           SITE_ITCH_URL: ${{ vars.SITE_ITCH_URL || 'https://drangoht.itch.io/' }}
-          SITE_GITHUB_URL: ${{ vars.SITE_GITHUB_URL }}
+          SITE_GITHUB_URL: ${{ vars.SITE_GITHUB_URL || 'https://github.com/drangoht' }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
