@@ -281,7 +281,11 @@ jobs:
         env:
           HTTP_PORT: ${{ vars.HTTP_PORT || '8081' }}
         run: |
-          url="${{ secrets.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
+          # `vars` et non `secrets` : une URL publique n'est pas un secret, et masquée en
+          # `***` dans la trace, elle rend le moindre diagnostic impossible — l'échec
+          # précédent affichait « Could not resolve host: *** » sans dire quel nom.
+          url="${{ vars.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
+          echo "Vérification de ${url}/health"
           for attempt in $(seq 1 12); do
             code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}/health" || true)"
             if [ "$code" = "200" ]; then
