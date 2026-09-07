@@ -78,7 +78,7 @@ public sealed class ItchIoClientTests
     private static ItchIoClient CreateClient(StubHttpMessageHandler handler, string apiKey = "cle-secrete")
     {
         var http = new HttpClient(handler) { BaseAddress = new Uri("https://itch.io/") };
-        var api = RestService.For<IItchIoApi>(http, ItchIoRefit.Settings);
+        var api = RestService.ForGenerated<IItchIoApi>(http, ItchIoRefit.Settings);
         var options = Options.Create(new ItchIoOptions { ApiKey = apiKey, Currency = "USD" });
 
         return new ItchIoClient(api, options, NullLogger<ItchIoClient>.Instance);

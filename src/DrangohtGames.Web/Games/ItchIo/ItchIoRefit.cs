@@ -22,7 +22,10 @@ internal static class ItchIoRefit
     /// <summary>Enregistre l'appel HTTP à itch.io et le catalogue qui le traduit.</summary>
     public static IServiceCollection AddItchIoCatalog(this IServiceCollection services)
     {
-        services.AddRefitClient<IItchIoApi>(Settings)
+        // AddRefitGeneratedClient, et non AddRefitClient : le second résout un constructeur
+        // de requêtes par réflexion, absent du paquet depuis Refit 15. L'implémentation
+        // générée à la compilation est la seule disponible ici.
+        services.AddRefitGeneratedClient<IItchIoApi>(Settings)
             .ConfigureHttpClient((provider, client) =>
             {
                 var options = provider.GetRequiredService<IOptions<ItchIoOptions>>().Value;
