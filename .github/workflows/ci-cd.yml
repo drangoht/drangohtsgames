@@ -135,6 +135,50 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: false
 
+      # L'image est éprouvée avant d'être déployée. `/health` ne suffit pas : la sonde est
+      # volontairement indépendante d'itch.io, donc elle reste verte alors que toute page
+      # listant des jeux répond 500 — c'est ainsi qu'une image cassée a été déployée en
+      # vert. On demande donc la page d'accueil elle-même, sur l'image finale.
+      - name: Éprouver l'image
+        env:
+          IMAGE: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.short_sha }}
+        run: |
+          docker pull "$IMAGE"
+
+          # Clé volontairement invalide : itch.io la refuse, et l'application doit alors
+          # servir un catalogue vide sans faillir. Aucun secret n'entre dans cette étape.
+          docker run --detach --name epreuve --publish 8080:8080 \
+            --env ItchIo__ApiKey=cle-invalide-de-verification \
+            --env Snapshot__Directory=/var/lib/drangohtgames \
+            "$IMAGE"
+
+          echec=0
+          for page in /health /; do
+            servie=""
+            for tentative in $(seq 1 20); do
+              code="$(curl -fsS -o /dev/null -w '%{http_code}' "http://localhost:8080${page}" || true)"
+              if [ "$code" = "200" ]; then
+                echo "L'image sert ${page} (tentative ${tentative})."
+                servie="oui"
+                break
+              fi
+              sleep 3
+            done
+
+            if [ -z "$servie" ]; then
+              echo "::error::L'image ne sert pas ${page} (dernier statut : ${code:-aucune réponse})."
+              echec=1
+              break
+            fi
+          done
+
+          if [ "$echec" != "0" ]; then
+            docker logs epreuve
+          fi
+
+          docker rm --force epreuve > /dev/null
+          exit "$echec"
+
   # ---------------------------------------------------------------------------
   deploy:
     name: 🚀 Déploiement
@@ -299,18 +343,37 @@ jobs:
           # `***` dans la trace, elle rend le moindre diagnostic impossible — l'échec
           # précédent affichait « Could not resolve host: *** » sans dire quel nom.
           url="${{ vars.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
-          echo "Vérification de ${url}/health"
-          for attempt in $(seq 1 12); do
-            code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}/health" || true)"
-            if [ "$code" = "200" ]; then
-              echo "Le site répond (tentative ${attempt})."
-              exit 0
+          # La sonde *et* la page d'accueil : /health n'interroge pas itch.io, il répond
+          # donc 200 alors que le catalogue est en erreur et que le site est inutilisable.
+          for page in /health /; do
+            servie=""
+            for attempt in $(seq 1 12); do
+              code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}${page}" || true)"
+              if [ "$code" = "200" ]; then
+                echo "${url}${page} répond (tentative ${attempt})."
+                servie="oui"
+                break
+              fi
+              echo "Tentative ${attempt} sur ${page} : statut ${code:-aucune réponse}, nouvel essai dans 5 s."
+              sleep 5
+            done
+
+            if [ -n "$servie" ]; then
+              continue
             fi
-            echo "Tentative ${attempt} : statut ${code:-aucune réponse}, nouvel essai dans 5 s."
-            sleep 5
+
+            echo "::error::Le site ne répond pas sur ${url}${page} après le déploiement."
+
+            if [ "$page" = "/health" ]; then
+              echo "L'application, elle, a répondu sur le port ${HTTP_PORT} du serveur à l'étape"
+              echo "précédente : chercher la cause entre le DNS, le reverse proxy et le certificat,"
+              echo "pas dans le conteneur. Le proxy doit pointer sur ce port de la machine hôte."
+            else
+              echo "La sonde /health répond : le proxy et le certificat sont hors de cause."
+              echo "L'application est démarrée mais ne parvient pas à rendre la page ; les"
+              echo "journaux du conteneur portent l'exception :"
+              echo "  docker compose -f ${{ vars.DEPLOY_PATH || '/opt/drangohtgames' }}/docker-compose.yml logs --tail 100 web"
+            fi
+
+            exit 1
           done
-          echo "::error::Le site ne répond pas sur ${url}/health après le déploiement."
-          echo "L'application, elle, a répondu sur le port ${HTTP_PORT} du serveur à l'étape"
-          echo "précédente : chercher la cause entre le DNS, le reverse proxy et le certificat,"
-          echo "pas dans le conteneur. Le proxy doit pointer sur ce port de la machine hôte."
-          exit 1

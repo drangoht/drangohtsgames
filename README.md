@@ -30,8 +30,24 @@ Le site répond sur `http://localhost:5xxx` (voir `Properties/launchSettings.jso
 
 ```bash
 cp .env.example .env      # puis renseigner ITCHIO_API_KEY
-docker compose up -d
+docker compose up -d      # tire l'image *déjà déployée* depuis GHCR
 ```
+
+Pour faire tourner **le code en cours** dans le conteneur, et non la version en ligne,
+superposer la surcharge de développement — elle construit l'image depuis le `Dockerfile`
+du dépôt et publie le site sur `http://localhost:8081` :
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Depuis Visual Studio, c'est le profil de lancement **« Conteneur Docker »** : même
+commande, navigateur ouvert au bon endroit. Le port se change par `DEV_HTTP_PORT`,
+distinct de `HTTP_PORT` qui décrit le serveur.
+
+> Éprouver son changement dans l'image finale n'est pas un luxe : la sonde `/health` est
+> volontairement indépendante d'itch.io, donc un catalogue en erreur la laisse verte
+> pendant que toutes les pages répondent 500.
 
 ---
 

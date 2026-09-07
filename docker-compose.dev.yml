@@ -1,0 +1,20 @@
+# Surcharge de développement : à superposer à `docker-compose.yml`.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+#
+# Le compose de déploiement désigne l'image du registre. Utilisé seul en local, il fait
+# donc tourner la version *déjà déployée* et non le code en cours : on ne peut rien y
+# éprouver. Cette surcharge construit l'image depuis le Dockerfile du dépôt.
+services:
+  web:
+    build:
+      context: .
+    image: drangohtgames:dev
+    # Sans cela, Compose irait chercher `drangohtgames:dev` sur un registre où il n'existe pas.
+    pull_policy: build
+
+    ports:
+      # Variable distincte de `HTTP_PORT` : celle-ci décrit le serveur et vit dans le `.env`
+      # de déploiement, où sa valeur n'a rien à voir avec le poste du développeur. Le profil
+      # de lancement « Conteneur Docker » ouvre 8081 — il faut que ce soit toujours vrai.
+      - "${DEV_HTTP_PORT:-8081}:8080"

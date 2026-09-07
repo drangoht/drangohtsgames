@@ -1,14 +1,22 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
-    "profiles": {
-      "http": {
-        "commandName": "Project",
-        "dotnetRunMessages": true,
-        "launchBrowser": true,
-        "applicationUrl": "http://localhost:5163",
-        "environmentVariables": {
-          "ASPNETCORE_ENVIRONMENT": "Development"
-        }
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5163",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Conteneur Docker": {
+      "commandName": "Executable",
+      "executablePath": "docker",
+      "commandLineArgs": "compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+      "workingDirectory": "..\\..",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:8081"
     }
   }
+}
