@@ -165,7 +165,8 @@ sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 **Variables** (toutes facultatives, valeurs par défaut dans le workflow) : `SITE_URL`,
 `DEPLOY_PATH` (défaut `/opt/drangohtgames`), `SITE_NAME`, `SITE_ITCH_URL`,
-`SITE_GITHUB_URL`, `HTTP_PORT`, `ITCHIO_CURRENCY`, `ITCHIO_CACHE_DURATION`.
+`SITE_GITHUB_URL`, `HTTP_PORT` (défaut `8081` — le port hôte, 8080 étant déjà pris
+sur le serveur de production), `ITCHIO_CURRENCY`, `ITCHIO_CACHE_DURATION`.
 
 Aucun secret de registre à gérer : GHCR s'authentifie avec le `GITHUB_TOKEN` natif.
 

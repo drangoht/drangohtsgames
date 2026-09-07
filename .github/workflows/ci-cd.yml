@@ -175,7 +175,9 @@ jobs:
           ITCHIO_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
           ITCHIO_CURRENCY: ${{ vars.ITCHIO_CURRENCY || 'USD' }}
           ITCHIO_CACHE_DURATION: ${{ vars.ITCHIO_CACHE_DURATION || '00:30:00' }}
-          HTTP_PORT: ${{ vars.HTTP_PORT || '8080' }}
+          # 8080 est déjà occupé sur le serveur : le défaut du dépôt doit rester
+          # déployable sans qu'une variable GitHub ait à être définie quelque part.
+          HTTP_PORT: ${{ vars.HTTP_PORT || '8081' }}
           SITE_NAME: ${{ vars.SITE_NAME || 'Drangoht Games' }}
           SITE_ITCH_URL: ${{ vars.SITE_ITCH_URL || 'https://drangoht.itch.io/' }}
           SITE_GITHUB_URL: ${{ vars.SITE_GITHUB_URL }}

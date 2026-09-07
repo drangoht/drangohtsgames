@@ -24,7 +24,10 @@ services:
       - snapshot:/var/lib/drangohtgames
 
     ports:
-      - "${HTTP_PORT:-8080}:9003"
+      # 8080 côté conteneur : c'est le port sur lequel le Dockerfile fait écouter Kestrel
+      # (`ASPNETCORE_HTTP_PORTS`). Côté hôte, 8080 est déjà pris sur le serveur — le
+      # défaut vaut donc 8081, et `HTTP_PORT` reste là pour en changer sans toucher au code.
+      - "${HTTP_PORT:-8081}:8080"
 
     # Durcissement : l'application n'écrit que dans son volume d'instantané.
     read_only: true
