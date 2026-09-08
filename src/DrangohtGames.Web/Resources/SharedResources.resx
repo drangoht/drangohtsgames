@@ -146,6 +146,12 @@
   <data name="Game.NoDescription" xml:space="preserve">
     <value>No description yet - the itch.io page has all the details.</value>
   </data>
+  <data name="Game.BackToGame" xml:space="preserve">
+    <value>Back to {0}</value>
+  </data>
+  <data name="Game.PlayFrameTitle" xml:space="preserve">
+    <value>{0}, playable in your browser</value>
+  </data>
   <data name="Game.BackToGames" xml:space="preserve">
     <value>Back to all games</value>
   </data>

@@ -53,4 +53,13 @@ public sealed record Game
 
     /// <summary>Indique qu'un widget itch.io peut être embarqué pour ce jeu.</summary>
     public bool IsEmbeddable { get; init; }
+
+    /// <summary>
+    /// Indique que le build Web du jeu est servi par le site, donc jouable sans le quitter.
+    /// </summary>
+    /// <remarks>
+    /// À distinguer de <see cref="IsEmbeddable"/>, qui dit seulement qu'itch.io le publie en
+    /// HTML. Un jeu peut être jouable là-bas sans l'être ici : voir l'ADR 0007.
+    /// </remarks>
+    public bool IsSelfHosted { get; init; }
 }

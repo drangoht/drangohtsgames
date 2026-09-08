@@ -8,3 +8,6 @@ obj/
 *.received.*
 [Tt]est[Rr]esult*/
 .env
+
+# Builds Web des jeux : téléchargés depuis les releases (ADR 0007), jamais versionnés.
+**/wwwroot/play/

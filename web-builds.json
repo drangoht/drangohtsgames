@@ -1,0 +1,29 @@
+{
+  "$comment": [
+    "Builds Web auto-hébergés (ADR 0007). Ce fichier ne sert QU'À la construction de",
+    "l'image : scripts/fetch-web-builds.sh le lit pour télécharger chaque archive dans",
+    "wwwroot/play/<slug>. À l'exécution, le site ne le consulte pas — il constate la",
+    "présence de wwwroot/play/<slug>/index.html.",
+    "",
+    "La clé est le slug du jeu, le même que dans data/games.json.",
+    "",
+    "L'archive attendue s'appelle web.zip et porte index.html à sa racine.",
+    "",
+    "Un jeu absent d'ici n'est pas jouable sur le site : sa fiche renvoie vers itch.io."
+  ],
+
+  "builds": {
+    "snake-snack": {
+      "repository": "drangoht/snake-snack",
+      "tag": "web-v0.5.0"
+    },
+    "smily-volley": {
+      "repository": "drangoht/SmilyVolley",
+      "tag": "web-v1.3.0"
+    },
+    "chimera-protocol": {
+      "repository": "drangoht/Chimera-Protocol",
+      "tag": "web-v2.5.0"
+    }
+  }
+}

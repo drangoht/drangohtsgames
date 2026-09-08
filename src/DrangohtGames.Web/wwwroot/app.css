@@ -560,6 +560,25 @@ h1, h2, h3 {
     border: 1px solid var(--border);
 }
 
+.game-frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: #000;
+}
+
+/* Un cadre au ratio 16/9 devient une bande illisible sur un téléphone tenu droit : le jeu
+   y prend la hauteur, comme il le ferait en plein écran. */
+@media (max-width: 40rem) {
+    .game-frame {
+        aspect-ratio: auto;
+        height: 70vh;
+        height: 70dvh;
+    }
+}
+
 .itch-widget {
     border: 0;
     width: 100%;

@@ -14,3 +14,4 @@ README.md
 CLAUDE.md
 .claude/
 docker-compose*.yml
+**/wwwroot/play/

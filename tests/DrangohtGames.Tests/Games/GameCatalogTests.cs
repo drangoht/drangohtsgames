@@ -3,6 +3,7 @@ using DrangohtGames.Tests.Fakes;
 using DrangohtGames.Web.Games;
 using DrangohtGames.Web.Games.Editorial;
 using DrangohtGames.Web.Games.ItchIo;
+using DrangohtGames.Web.Games.SelfHosted;
 using DrangohtGames.Web.Games.Snapshots;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -26,10 +27,12 @@ public sealed class GameCatalogTests : IDisposable
     private GameCatalog CreateCatalog(
         IItchIoClient client,
         EditorialCatalog? editorial = null,
-        GameCatalogSnapshotStore? snapshotStore = null) =>
+        GameCatalogSnapshotStore? snapshotStore = null,
+        SelfHostedGames? selfHosted = null) =>
         new(
             client,
             editorial ?? EditorialCatalog.Empty,
+            selfHosted ?? SelfHostedGames.None,
             snapshotStore ?? CreateSnapshotStore(),
             _cache,
             Options.Create(new ItchIoOptions { ApiKey = "cle", CacheDuration = TimeSpan.FromMinutes(30) }),
@@ -60,6 +63,21 @@ public sealed class GameCatalogTests : IDisposable
 
         game.Engine.ShouldBe("Unity");
         game.Tags.ShouldBe(["Shmup"]);
+    }
+
+    [Fact]
+    public async Task GetGamesAsync_MarqueLesJeuxDontLeBuildEstPresent()
+    {
+        var catalog = CreateCatalog(
+            FakeItchIoClient.Returning(
+                new GameBuilder().WithSlug("x-moon").Build(),
+                new GameBuilder().WithSlug("y-sun").WithId(2).Build()),
+            selfHosted: SelfHostedGames.For(["x-moon"]));
+
+        var games = await catalog.GetGamesAsync(CancellationToken.None);
+
+        games.Single(game => game.Slug.Value == "x-moon").IsSelfHosted.ShouldBeTrue();
+        games.Single(game => game.Slug.Value == "y-sun").IsSelfHosted.ShouldBeFalse();
     }
 
     [Fact]

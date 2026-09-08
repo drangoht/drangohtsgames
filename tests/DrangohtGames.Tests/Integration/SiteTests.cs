@@ -91,6 +91,49 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
     }
 
     [Fact]
+    public async Task FicheJeu_QuandLeJeuEstAutoHeberge_RenvoieVersLaPageDeJeu()
+    {
+        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+
+        html.ShouldContain("/games/x-moon/play");
+    }
+
+    [Fact]
+    public async Task FicheJeu_QuandLeJeuNAPasDeBuild_NeProposePasDYJouer()
+    {
+        var html = await CreateClient().GetStringAsync("/games/y-sun", CancellationToken.None);
+
+        html.ShouldNotContain("/games/y-sun/play");
+        html.ShouldContain("https://drangoht.itch.io/y-sun");
+    }
+
+    [Fact]
+    public async Task PageDeJeu_QuandLeJeuEstAutoHeberge_EncadreSonBuild()
+    {
+        var html = await CreateClient().GetStringAsync("/games/x-moon/play", CancellationToken.None);
+
+        html.ShouldContain("/play/x-moon/index.html");
+        html.ShouldContain("X-Moon");
+    }
+
+    [Fact]
+    public async Task PageDeJeu_QuandLeJeuNAPasDeBuild_Repond404()
+    {
+        // Rien à encadrer : mieux vaut un 404 qu'un cadre vide indexé par les moteurs.
+        var response = await CreateClient().GetAsync("/games/y-sun/play", CancellationToken.None);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task PageDeJeu_QuandLeSlugEstInconnu_Repond404()
+    {
+        var response = await CreateClient().GetAsync("/games/jeu-fantome/play", CancellationToken.None);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task FicheJeu_QuandLeSlugEstInconnu_Repond404()
     {
         var response = await CreateClient().GetAsync("/games/jeu-fantome", CancellationToken.None);
@@ -190,8 +233,11 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
         var response = await CreateClient().GetAsync("/", CancellationToken.None);
 
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
-        response.Headers.GetValues("X-Frame-Options").ShouldContain("DENY");
         response.Headers.Contains("Referrer-Policy").ShouldBeTrue();
+
+        // SAMEORIGIN et non DENY depuis l'ADR 0007 : la page de jeu encadre le build servi
+        // par le site, et DENY l'interdit même de même origine. Un tiers reste bloqué.
+        response.Headers.GetValues("X-Frame-Options").ShouldContain("SAMEORIGIN");
     }
 
     [Theory]

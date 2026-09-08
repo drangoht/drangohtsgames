@@ -2,6 +2,7 @@ using DrangohtGames.Tests.Builders;
 using DrangohtGames.Tests.Fakes;
 using DrangohtGames.Web.Games;
 using DrangohtGames.Web.Games.ItchIo;
+using DrangohtGames.Web.Games.SelfHosted;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,13 @@ internal sealed class SiteFactory : WebApplicationFactory<Program>
         .WithPlatforms(GamePlatforms.Windows | GamePlatforms.Linux)
         .Build();
 
+    /// <summary>Un jeu publié sur itch.io dont le build n'est pas hébergé ici (ADR 0007).</summary>
+    public static Game GameWithoutBuild { get; } = new GameBuilder()
+        .WithId(43)
+        .WithSlug("y-sun")
+        .WithTitle("Y-Sun")
+        .Build();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -51,7 +59,13 @@ internal sealed class SiteFactory : WebApplicationFactory<Program>
         {
             // Aucun appel réseau ne doit partir d'une suite de tests.
             services.RemoveAll<IItchIoClient>();
-            services.AddSingleton<IItchIoClient>(_ => FakeItchIoClient.Returning(SampleGame));
+            services.AddSingleton<IItchIoClient>(_ =>
+                FakeItchIoClient.Returning(SampleGame, GameWithoutBuild));
+
+            // Aucun build n'est téléchargé pendant la suite : on déclare ce que le disque
+            // porterait, pour que le routage de la page de jeu soit éprouvé quand même.
+            services.RemoveAll<SelfHostedGames>();
+            services.AddSingleton(SelfHostedGames.For([SampleGame.Slug.Value]));
         });
     }
 

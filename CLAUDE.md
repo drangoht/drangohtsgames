@@ -40,6 +40,8 @@ docker compose up -d          # lit .env (voir .env.example)
 | `Games/ItchIo/` | **seul** endroit qui parle le vocabulaire itch.io — couche anti-corruption |
 | `Games/Editorial/` | fusion avec `data/games.json` (tags, descriptions, captures, traductions) |
 | `Games/Snapshots/` | instantané de repli quand l'API est indisponible |
+| `Games/SelfHosted/` | recensement des builds Web servis par le site (`wwwroot/play/`) |
+| `web-builds.json` | manifeste des builds téléchargés à la construction de l'image (ADR 0007) |
 | `Resources/SharedResources*.resx` | traductions FR/EN — les deux fichiers portent les mêmes clés |
 | `docs/adr/` | décisions structurantes, dont la dérogation mono-projet (ADR 0002) |
 
@@ -66,6 +68,11 @@ docker compose up -d          # lit .env (voir .env.example)
 - **Toute chaîne affichée passe par `IStringLocalizer<SharedResources>`.** Un texte en dur
   dans un composant casse la moitié du site.
 - **Ajouter une clé de traduction, c'est l'ajouter dans les deux `.resx`.**
+- **Les jeux jouables sont auto-hébergés** (ADR 0007). Le build arrive dans `wwwroot/play/<slug>/`
+  à la construction de l'image, depuis la release GitHub déclarée dans `web-builds.json` — il
+  n'est jamais versionné ici. À l'exécution, rien ne lit ce manifeste : `SelfHostedGames`
+  constate la présence de `index.html`. Un jeu sans build renvoie vers itch.io, sans cas
+  particulier à écrire.
 - Le rendu est **Blazor SSR statique** : pas d'interactivité côté client, les formulaires
   sont de vrais `<form>` HTML (GET pour les filtres, POST + antiforgery pour la langue).
 

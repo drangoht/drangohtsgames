@@ -152,8 +152,17 @@ jobs:
             --env Snapshot__Directory=/var/lib/drangohtgames \
             "$IMAGE"
 
+          # Les jeux auto-hébergés (ADR 0007) entrent dans l'image après le publish : rien
+          # dans la suite de tests ne voit l'archive décompressée. On demande donc leur
+          # index.html — un fichier statique, servi même avec un catalogue vide, alors que
+          # /games/<slug>/play dépend d'itch.io et répondrait 404 avec la clé invalide.
+          pages="/health /"
+          for slug in $(jq -r '.builds | keys[]' web-builds.json); do
+            pages="${pages} /play/${slug}/index.html"
+          done
+
           echec=0
-          for page in /health /; do
+          for page in $pages; do
             servie=""
             for tentative in $(seq 1 20); do
               code="$(curl -fsS -o /dev/null -w '%{http_code}' "http://localhost:8080${page}" || true)"

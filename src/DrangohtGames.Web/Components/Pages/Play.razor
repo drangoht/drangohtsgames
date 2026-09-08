@@ -1,0 +1,69 @@
+@page "/games/{slug}/play"
+@inject IGameCatalog Catalog
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+
+@if (_game is null)
+{
+    <PageTitle>@T["NotFound.Title"] — @Site.Value.Name</PageTitle>
+    <h1 class="page-title">@T["NotFound.Title"]</h1>
+    <p>@T["NotFound.Body"]</p>
+    <a class="button button--primary" href="/">@T["NotFound.Home"]</a>
+}
+else
+{
+    <PageTitle>@_game.Title — @Site.Value.Name</PageTitle>
+    <HeadContent>
+        @* Rien à indexer ici : la fiche porte le contenu, cette page ne porte que le jeu. *@
+        <meta name="robots" content="noindex" />
+    </HeadContent>
+
+    <nav class="breadcrumb">
+        <a href="/games/@_game.Slug.Value">← @BackLabel</a>
+    </nav>
+
+    <h1 class="page-title">@_game.Title</h1>
+
+    @* Le build est servi par le site, en même origine. `allow` reste explicite : sans lui,
+       le plein écran demandé depuis le jeu est refusé sans message. *@
+    <iframe class="game-frame"
+            src="@PlayUrl"
+            title="@FrameTitle"
+            allow="fullscreen; autoplay; gamepad"
+            allowfullscreen></iframe>
+}
+
+@code {
+    private Game? _game;
+
+    /// <summary>Identifiant du jeu dans l'URL.</summary>
+    [Parameter]
+    public string? Slug { get; set; }
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var games = await Catalog.GetGamesAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
+
+        // Un jeu sans build n'a pas de page de jeu : un cadre vide serait indexé et
+        // partagé comme s'il menait quelque part.
+        _game = games.FirstOrDefault(game =>
+            game.IsSelfHosted
+            && string.Equals(game.Slug.Value, Slug, StringComparison.OrdinalIgnoreCase));
+
+        if (_game is null && HttpContext is not null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        }
+    }
+
+    private string PlayUrl => $"/play/{_game!.Slug.Value}/index.html";
+
+    private string BackLabel =>
+        string.Format(CultureInfo.CurrentCulture, T["Game.BackToGame"].Value, _game!.Title);
+
+    private string FrameTitle =>
+        string.Format(CultureInfo.CurrentCulture, T["Game.PlayFrameTitle"].Value, _game!.Title);
+}

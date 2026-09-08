@@ -27,6 +27,21 @@ RUN dotnet publish src/DrangohtGames.Web/DrangohtGames.Web.csproj \
 # donc plus aucun `RUN` n'y est possible.
 RUN mkdir -p /snapshot-dir
 
+# --- Builds Web des jeux ------------------------------------------------------
+# Auto-hébergement des jeux jouables (ADR 0007). Étape séparée : elle ne dépend que du
+# manifeste, donc sa couche est réutilisée tant qu'aucune étiquette de jeu ne bouge, et
+# l'étape de compilation n'a pas besoin d'un client HTTP ni d'un décompresseur.
+#
+# Cette étape exige le réseau vers github.com. C'est assumé : plutôt un `docker build` qui
+# échoue franchement qu'une image amputée de ses jeux, déployée au vert.
+FROM alpine:3.24 AS games
+
+RUN apk add --no-cache curl jq unzip
+
+WORKDIR /games
+COPY web-builds.json scripts/fetch-web-builds.sh ./
+RUN sh fetch-web-builds.sh web-builds.json /games/play
+
 # --- Image d'exécution --------------------------------------------------------
 # Image « chiseled » : ni shell, ni gestionnaire de paquets, surface d'attaque réduite.
 # Variante « extra », car le site est bilingue et formate dates et montants selon la
@@ -35,6 +50,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra AS final
 
 WORKDIR /app
 COPY --from=build --chown=$APP_UID:$APP_UID /app .
+
+# Les jeux arrivent après le publish, donc hors du manifeste de `MapStaticAssets` : ils
+# sont servis par un pipeline de fichiers statiques distinct, déclaré dans Program.cs.
+COPY --from=games --chown=$APP_UID:$APP_UID /games/play ./wwwroot/play
 
 # Point de montage de l'instantané de repli. Il appartient à l'utilisateur non privilégié :
 # monté par Docker, il serait sinon possédé par root et l'application ne pourrait pas y écrire.

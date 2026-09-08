@@ -1,10 +1,12 @@
 using DrangohtGames.Web.Games;
 using DrangohtGames.Web.Games.ItchIo;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Shouldly;
 
 namespace DrangohtGames.Tests.Architecture;
@@ -46,6 +48,23 @@ public sealed class CompositionRootTests : IDisposable
         using var scope = _factory.Services.CreateScope();
 
         scope.ServiceProvider.GetRequiredService<IGameCatalog>().ShouldNotBeNull();
+    }
+
+    [Theory]
+    [InlineData("chimera-protocol/Build/web.wasm.unityweb")]
+    [InlineData("snake-snack/Build/Web.data.unityweb")]
+    public void LesRessourcesUnity_OntUnTypeDeContenuDeclare(string chemin)
+    {
+        // Sans ce mapping, le fichier part en 404 muet : index.html répond 200, la CI reste
+        // verte, et le jeu ne démarre jamais. On ne peut pas le vérifier par une URL en CI —
+        // chaque build nomme ses ressources à sa façon, la casse comprise.
+        var options = _factory.Services.GetRequiredService<IOptions<StaticFileOptions>>().Value;
+
+        var connu = options.ContentTypeProvider.ShouldNotBeNull()
+            .TryGetContentType(chemin, out var typeDeContenu);
+
+        connu.ShouldBeTrue($"{chemin} serait refusé par le serveur de fichiers statiques.");
+        typeDeContenu.ShouldBe("application/octet-stream");
     }
 
     public void Dispose()

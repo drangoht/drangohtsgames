@@ -73,10 +73,24 @@ else
                     </div>
                 </dl>
 
-                <a class="button button--primary" href="@_game.ItchUrl"
-                   rel="noopener noreferrer external" target="_blank">
-                    @(_game.IsEmbeddable ? T["Game.PlayInBrowser"] : T["Game.GetItOnItch"])
-                </a>
+                @if (_game.IsSelfHosted)
+                {
+                    @* Le build est hébergé ici (ADR 0007) : le visiteur joue sans partir. *@
+                    <a class="button button--primary" href="/games/@_game.Slug.Value/play">
+                        @T["Game.PlayInBrowser"]
+                    </a>
+                    <a class="button" href="@_game.ItchUrl"
+                       rel="noopener noreferrer external" target="_blank">
+                        @T["Game.ViewOnItch"]
+                    </a>
+                }
+                else
+                {
+                    <a class="button button--primary" href="@_game.ItchUrl"
+                       rel="noopener noreferrer external" target="_blank">
+                        @(_game.IsEmbeddable ? T["Game.PlayInBrowser"] : T["Game.GetItOnItch"])
+                    </a>
+                }
             </div>
         </header>
 

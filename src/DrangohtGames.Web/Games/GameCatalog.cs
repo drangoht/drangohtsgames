@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DrangohtGames.Web.Games.Editorial;
 using DrangohtGames.Web.Games.ItchIo;
+using DrangohtGames.Web.Games.SelfHosted;
 using DrangohtGames.Web.Games.Snapshots;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -12,9 +13,10 @@ namespace DrangohtGames.Web.Games;
 /// éditorial local, avec repli sur le dernier instantané connu quand l'API est indisponible.
 /// </summary>
 /// <remarks>
-/// Le contenu éditorial est appliqué <em>en sortie</em>, jamais avant la mise en cache ni
-/// avant l'écriture de l'instantané : corriger une description et redéployer prend ainsi
-/// effet immédiatement, même si itch.io est injoignable.
+/// Le contenu éditorial et le recensement des builds auto-hébergés sont appliqués
+/// <em>en sortie</em>, jamais avant la mise en cache ni avant l'écriture de l'instantané :
+/// corriger une description ou ajouter un jeu jouable prend ainsi effet immédiatement,
+/// même si itch.io est injoignable.
 /// </remarks>
 public sealed partial class GameCatalog : IGameCatalog, IDisposable
 {
@@ -23,6 +25,7 @@ public sealed partial class GameCatalog : IGameCatalog, IDisposable
     private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly IItchIoClient _client;
     private readonly EditorialCatalog _editorial;
+    private readonly SelfHostedGames _selfHosted;
     private readonly GameCatalogSnapshotStore _snapshotStore;
     private readonly IMemoryCache _cache;
     private readonly TimeSpan _cacheDuration;
@@ -32,6 +35,7 @@ public sealed partial class GameCatalog : IGameCatalog, IDisposable
     public GameCatalog(
         IItchIoClient client,
         EditorialCatalog editorial,
+        SelfHostedGames selfHosted,
         GameCatalogSnapshotStore snapshotStore,
         IMemoryCache cache,
         IOptions<ItchIoOptions> options,
@@ -39,6 +43,7 @@ public sealed partial class GameCatalog : IGameCatalog, IDisposable
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(editorial);
+        ArgumentNullException.ThrowIfNull(selfHosted);
         ArgumentNullException.ThrowIfNull(snapshotStore);
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(options);
@@ -46,6 +51,7 @@ public sealed partial class GameCatalog : IGameCatalog, IDisposable
 
         _client = client;
         _editorial = editorial;
+        _selfHosted = selfHosted;
         _snapshotStore = snapshotStore;
         _cache = cache;
         _cacheDuration = options.Value.CacheDuration;
@@ -57,7 +63,7 @@ public sealed partial class GameCatalog : IGameCatalog, IDisposable
     {
         var games = await GetOrRefreshAsync(cancellationToken).ConfigureAwait(false);
 
-        return [.. games.Select(_editorial.Apply)];
+        return [.. games.Select(_editorial.Apply).Select(_selfHosted.Apply)];
     }
 
     /// <inheritdoc />
