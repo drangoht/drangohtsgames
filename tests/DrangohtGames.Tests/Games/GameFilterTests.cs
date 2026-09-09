@@ -24,6 +24,7 @@ public sealed class GameFilterTests
         .WithSlug("puzzle-box").WithTitle("Puzzle Box")
         .WithTags("Puzzle").WithEngine("Godot")
         .WithPlatforms(GamePlatforms.Windows | GamePlatforms.Android)
+        .WithSelfHosted()
         .Build();
 
     private static readonly Game[] Tous = [XMoon, WebRunner, PuzzleBox];
@@ -127,6 +128,28 @@ public sealed class GameFilterTests
         GameFilter.Empty.IsActive.ShouldBeFalse();
         (GameFilter.Empty with { Tag = "Arcade" }).IsActive.ShouldBeTrue();
         (GameFilter.Empty with { SearchTerm = " " }).IsActive.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Apply_QuandSeulsLesJeuxJouablesIciSontDemandes_EcarteLesAutres()
+    {
+        var filtre = GameFilter.Empty with { PlayableHere = true };
+
+        filtre.Apply(Tous).ShouldBe([PuzzleBox]);
+    }
+
+    [Fact]
+    public void Apply_QuandLeCritereJouableIciEstFaux_NEcarteAucunJeu()
+    {
+        var filtre = GameFilter.Empty with { PlayableHere = false };
+
+        filtre.Apply(Tous).ShouldBe(Tous);
+    }
+
+    [Fact]
+    public void IsActive_QuandSeulLeCritereJouableIciEstPose_EstVrai()
+    {
+        (GameFilter.Empty with { PlayableHere = true }).IsActive.ShouldBeTrue();
     }
 
     [Fact]

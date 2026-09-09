@@ -17,6 +17,8 @@ internal sealed class GameBuilder
     private GamePlatforms _platforms = GamePlatforms.Windows;
     private IReadOnlyList<string> _tags = [];
     private string? _engine;
+    private bool _isSelfHosted;
+    private bool _isFeatured;
 
     public GameBuilder WithSlug(string slug)
     {
@@ -72,6 +74,18 @@ internal sealed class GameBuilder
         return this;
     }
 
+    public GameBuilder WithSelfHosted()
+    {
+        _isSelfHosted = true;
+        return this;
+    }
+
+    public GameBuilder WithFeatured()
+    {
+        _isFeatured = true;
+        return this;
+    }
+
     public Game Build() => new()
     {
         Id = _id,
@@ -84,5 +98,7 @@ internal sealed class GameBuilder
         Platforms = _platforms,
         Tags = _tags,
         Engine = _engine,
+        IsSelfHosted = _isSelfHosted,
+        IsFeatured = _isFeatured,
     };
 }

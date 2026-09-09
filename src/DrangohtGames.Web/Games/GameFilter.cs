@@ -28,12 +28,16 @@ public sealed record GameFilter
     /// <summary>Terme recherché dans le titre, les accroches et les tags.</summary>
     public string? SearchTerm { get; init; }
 
+    /// <summary>Ne retient que les jeux dont le build Web est servi par le site (ADR 0007).</summary>
+    public bool PlayableHere { get; init; }
+
     /// <summary>Indique qu'au moins un critère exploitable est posé.</summary>
     public bool IsActive =>
         !string.IsNullOrWhiteSpace(Tag)
         || !string.IsNullOrWhiteSpace(Engine)
         || Platform is not null and not GamePlatforms.None
-        || !string.IsNullOrWhiteSpace(SearchTerm);
+        || !string.IsNullOrWhiteSpace(SearchTerm)
+        || PlayableHere;
 
     /// <summary>Applique les critères en conservant l'ordre du catalogue.</summary>
     public IReadOnlyList<Game> Apply(IEnumerable<Game> games)
@@ -48,6 +52,7 @@ public sealed record GameFilter
                 MatchesTag(game)
                 && MatchesEngine(game)
                 && MatchesPlatform(game)
+                && MatchesPlayableHere(game)
                 && MatchesSearch(game, searchTerm)),
         ];
     }
@@ -91,6 +96,8 @@ public sealed record GameFilter
         Platform is not { } platform
         || platform == GamePlatforms.None
         || game.Platforms.HasFlag(platform);
+
+    private bool MatchesPlayableHere(Game game) => !PlayableHere || game.IsSelfHosted;
 
     private static bool MatchesSearch(Game game, string? searchTerm)
     {

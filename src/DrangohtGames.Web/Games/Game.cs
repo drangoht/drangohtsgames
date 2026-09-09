@@ -55,6 +55,15 @@ public sealed record Game
     public bool IsEmbeddable { get; init; }
 
     /// <summary>
+    /// Indique que le jeu est désigné pour la vitrine de l'accueil.
+    /// </summary>
+    /// <remarks>
+    /// Alimenté par le fichier éditorial : itch.io ne connaît pas cette notion, qui relève
+    /// d'un choix de présentation.
+    /// </remarks>
+    public bool IsFeatured { get; init; }
+
+    /// <summary>
     /// Indique que le build Web du jeu est servi par le site, donc jouable sans le quitter.
     /// </summary>
     /// <remarks>

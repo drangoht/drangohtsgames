@@ -131,6 +131,26 @@ public sealed class EditorialCatalogTests
     }
 
     [Fact]
+    public void Apply_QuandLEntreeMetLeJeuEnAvant_LeSignaleAuCatalogue()
+    {
+        var catalog = EditorialCatalog.FromJson("""
+            { "games": { "web-runner": { "featured": true } } }
+            """);
+        var game = new GameBuilder().WithSlug("web-runner").Build();
+
+        catalog.Apply(game).IsFeatured.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Apply_SansMentionDeMiseEnAvant_NeMetPasLeJeuEnAvant()
+    {
+        var catalog = EditorialCatalog.FromJson(Contenu);
+        var game = new GameBuilder().WithSlug("web-runner").Build();
+
+        catalog.Apply(game).IsFeatured.ShouldBeFalse();
+    }
+
+    [Fact]
     public void SlugsInconnus_SignaleLesEntreesQuiNeCorrespondentAAucunJeu()
     {
         var catalog = EditorialCatalog.FromJson(Contenu);

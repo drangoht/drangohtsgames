@@ -32,6 +32,9 @@ internal sealed record EditorialEntry
 
     [JsonPropertyName("screenshots")]
     public IReadOnlyList<EditorialScreenshot> Screenshots { get; init; } = [];
+
+    [JsonPropertyName("featured")]
+    public bool Featured { get; init; }
 }
 
 /// <summary>Texte bilingue tel qu'il est saisi dans le fichier éditorial.</summary>

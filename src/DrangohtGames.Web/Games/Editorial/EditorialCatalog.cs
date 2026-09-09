@@ -80,6 +80,7 @@ public sealed class EditorialCatalog
             Screenshots = ToScreenshots(entry.Screenshots) is { Count: > 0 } screenshots
                 ? screenshots
                 : game.Screenshots,
+            IsFeatured = entry.Featured,
         };
     }
 
