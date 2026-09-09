@@ -64,6 +64,32 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
     }
 
     [Fact]
+    public async Task Accueil_MetEnVitrineUnJeuJouableSansQuitterLeSite()
+    {
+        var html = await CreateClient().GetStringAsync("/", CancellationToken.None);
+
+        html.ShouldContain("/games/x-moon/play");
+    }
+
+    [Fact]
+    public async Task Accueil_QuandUnFiltreEstActif_EffaceLaVitrine()
+    {
+        // Filtrer, c'est chercher : la vitrine deviendrait un doublon au-dessus des résultats.
+        var html = await CreateClient().GetStringAsync("/?tag=Arcade", CancellationToken.None);
+
+        html.ShouldNotContain("/games/x-moon/play");
+    }
+
+    [Fact]
+    public async Task Accueil_NeGardeQueLesJeuxJouablesSurPlaceQuandLUrlLeDemande()
+    {
+        var html = await CreateClient().GetStringAsync("/?playable=true", CancellationToken.None);
+
+        html.ShouldContain("X-Moon");
+        html.ShouldNotContain("Y-Sun");
+    }
+
+    [Fact]
     public async Task Accueil_FiltreParTagDepuisLaChaineDeRequete()
     {
         var client = CreateClient();

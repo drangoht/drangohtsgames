@@ -1,4 +1,5 @@
 @page "/"
+@using Microsoft.AspNetCore.WebUtilities
 @inject IGameCatalog Catalog
 @inject IStringLocalizer<SharedResources> T
 @inject IOptions<SiteOptions> Site
@@ -17,45 +18,81 @@
 }
 else
 {
-    @* Formulaire GET : chaque sélection produit une URL partageable, et l'ensemble
+    @* La vitrine ne s'affiche pas sous filtre : elle doublonnerait les résultats. *@
+    @if (Hero is { } hero)
+    {
+        <article class="hero">
+            <div class="hero__art">
+                @if (HeroImageOf(hero) is { } image)
+                {
+                    <img src="@image" alt="" fetchpriority="high" decoding="async" />
+                }
+            </div>
+            <div class="hero__body">
+                <p class="hero__eyebrow">
+                    @(hero.IsSelfHosted ? T["Home.PlayableHere"] : T["Home.Featured"])
+                </p>
+                <h2 class="hero__title">@hero.Title</h2>
+                @if (hero.Tagline.For(CultureInfo.CurrentUICulture) is { } tagline)
+                {
+                    <p class="hero__tagline">@tagline</p>
+                }
+                <div class="hero__actions">
+                    @if (hero.IsSelfHosted)
+                    {
+                        <a class="button button--primary" href="/games/@hero.Slug.Value/play">
+                            @T["Game.PlayInBrowser"]
+                        </a>
+                    }
+                    <a class="button button--ghost" href="/games/@hero.Slug.Value">@T["Home.SeeGame"]</a>
+                </div>
+            </div>
+        </article>
+    }
+
+    @* Les critères sont des liens : une sélection produit une URL partageable et le tri
        fonctionne sans JavaScript — condition d'un rendu serveur statique. *@
-    <form method="get" class="filters" role="search">
-        <fieldset>
-            <legend class="visually-hidden">@T["Filter.Legend"]</legend>
+    <section class="filters" aria-label="@T["Filter.Legend"]">
+        <ul class="chips">
+            <li>
+                <a class="chip @(_filter.IsActive ? null : "chip--on")" href="/">@T["Filter.All"]</a>
+            </li>
+            <li>
+                <a class="chip @(PlayableOnly ? "chip--on" : null)" href="@HrefTogglingPlayable()">
+                    @T["Filter.PlayableHere"]
+                </a>
+            </li>
+            @foreach (var tag in _availableTags)
+            {
+                <li>
+                    <a class="chip @(IsSelected(Tag, tag) ? "chip--on" : null)"
+                       href="@HrefWithTag(IsSelected(Tag, tag) ? null : tag)">@tag</a>
+                </li>
+            }
+            @foreach (var engine in _availableEngines)
+            {
+                <li>
+                    <a class="chip chip--engine @(IsSelected(Engine, engine) ? "chip--on" : null)"
+                       href="@HrefWithEngine(IsSelected(Engine, engine) ? null : engine)">@engine</a>
+                </li>
+            }
+        </ul>
+
+        @* Recherche et plateforme demandent une saisie : elles restent un formulaire GET.
+           Les critères déjà posés voyagent en champs cachés pour ne pas être perdus. *@
+        <form method="get" class="filters__form" role="search">
+            <input type="hidden" name="tag" value="@Tag" />
+            <input type="hidden" name="engine" value="@Engine" />
+            @if (PlayableOnly)
+            {
+                <input type="hidden" name="playable" value="true" />
+            }
 
             <div class="filters__field filters__field--grow">
                 <label for="q">@T["Filter.Search"]</label>
                 <input type="search" id="q" name="q" value="@Search"
                        placeholder="@T["Filter.SearchPlaceholder"]" autocomplete="off" />
             </div>
-
-            @if (_availableTags.Count > 0)
-            {
-                <div class="filters__field">
-                    <label for="tag">@T["Filter.Tag"]</label>
-                    <select id="tag" name="tag">
-                        <option value="">@T["Filter.Any"]</option>
-                        @foreach (var tag in _availableTags)
-                        {
-                            <option value="@tag" selected="@IsSelected(Tag, tag)">@tag</option>
-                        }
-                    </select>
-                </div>
-            }
-
-            @if (_availableEngines.Count > 0)
-            {
-                <div class="filters__field">
-                    <label for="engine">@T["Filter.Engine"]</label>
-                    <select id="engine" name="engine">
-                        <option value="">@T["Filter.Any"]</option>
-                        @foreach (var engine in _availableEngines)
-                        {
-                            <option value="@engine" selected="@IsSelected(Engine, engine)">@engine</option>
-                        }
-                    </select>
-                </div>
-            }
 
             <div class="filters__field">
                 <label for="platform">@T["Filter.Platform"]</label>
@@ -70,13 +107,9 @@ else
 
             <div class="filters__actions">
                 <button type="submit" class="button button--primary">@T["Filter.Apply"]</button>
-                @if (_filter.IsActive)
-                {
-                    <a class="button button--ghost" href="/">@T["Home.ClearFilters"]</a>
-                }
             </div>
-        </fieldset>
-    </form>
+        </form>
+    </section>
 
     <p class="results-count" role="status">
         @(_visibleGames.Count == 1 ? T["Home.GameCountOne"].Value : string.Format(CultureInfo.CurrentCulture, T["Home.GameCount"].Value, _visibleGames.Count))
@@ -89,7 +122,7 @@ else
     else
     {
         <ul class="grid">
-            @foreach (var game in _visibleGames)
+            @foreach (var game in Listed)
             {
                 <li class="grid__item">
                     <GameCard Game="game" />
@@ -130,6 +163,18 @@ else
     [SupplyParameterFromQuery(Name = "platform")]
     private string? Platform { get; set; }
 
+    [SupplyParameterFromQuery(Name = "playable")]
+    private string? Playable { get; set; }
+
+    private bool PlayableOnly => bool.TryParse(Playable, out var playable) && playable;
+
+    /// <summary>Jeu de la vitrine, absent dès qu'un critère est posé.</summary>
+    private Game? Hero => _filter.IsActive ? null : FeaturedGame.Of(_allGames);
+
+    /// <summary>Jeux de la grille : le jeu en vitrine n'y est pas répété.</summary>
+    private IEnumerable<Game> Listed =>
+        Hero is { } hero ? _visibleGames.Where(game => game != hero) : _visibleGames;
+
     protected override async Task OnParametersSetAsync()
     {
         _allGames = await Catalog.GetGamesAsync(HttpContext?.RequestAborted ?? CancellationToken.None);
@@ -142,9 +187,52 @@ else
             Tag = Tag,
             Engine = Engine,
             Platform = ParsePlatform(Platform),
+            PlayableHere = PlayableOnly,
         };
 
         _visibleGames = _filter.Apply(_allGames);
+    }
+
+    /// <summary>
+    /// La vitrine mérite mieux qu'une couverture de 315 pixels : on prend la première
+    /// capture quand le fichier éditorial en fournit une.
+    /// </summary>
+    private static Uri? HeroImageOf(Game game) =>
+        game.Screenshots.Count > 0 ? game.Screenshots[0].Url : game.CoverUrl;
+
+    private string HrefWithTag(string? tag) => Href(tag, Engine, PlayableOnly);
+
+    private string HrefWithEngine(string? engine) => Href(Tag, engine, PlayableOnly);
+
+    private string HrefTogglingPlayable() => Href(Tag, Engine, !PlayableOnly);
+
+    /// <summary>
+    /// Compose l'URL de la page en remplaçant un seul critère : cliquer sur un tag ne doit
+    /// pas effacer la recherche ni la plateforme déjà choisies.
+    /// </summary>
+    private string Href(string? tag, string? engine, bool playable)
+    {
+        var query = new Dictionary<string, string?>(StringComparer.Ordinal);
+
+        AddIfSet(query, "q", Search);
+        AddIfSet(query, "tag", tag);
+        AddIfSet(query, "engine", engine);
+        AddIfSet(query, "platform", Platform);
+
+        if (playable)
+        {
+            query["playable"] = "true";
+        }
+
+        return QueryHelpers.AddQueryString("/", query);
+    }
+
+    private static void AddIfSet(Dictionary<string, string?> query, string name, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            query[name] = value;
+        }
     }
 
     /// <summary>

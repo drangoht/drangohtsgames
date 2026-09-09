@@ -247,18 +247,68 @@ h1, h2, h3 {
 
 .filters {
     margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.15rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
 }
 
-.filters fieldset {
+.filters__form {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
     gap: 0.85rem;
     margin: 0;
-    padding: 1.15rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--bg-elevated);
+}
+
+.chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+}
+
+.chip {
+    display: inline-block;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    transition: color var(--transition), border-color var(--transition);
+}
+
+.chip:hover,
+.chip:focus-visible {
+    color: var(--text);
+    border-color: var(--text-muted);
+    text-decoration: none;
+}
+
+/* Le moteur n'est pas un tag : le trait discontinu le dit sans ajouter de légende. */
+.chip--engine {
+    border-style: dashed;
+}
+
+.chip--on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-contrast);
+    font-weight: 600;
+}
+
+.chip--on:hover,
+.chip--on:focus-visible {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: var(--accent-contrast);
 }
 
 .filters__field {
@@ -341,7 +391,96 @@ h1, h2, h3 {
     padding: 0;
     display: grid;
     gap: 1.25rem;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}
+
+/* --- Vitrine -------------------------------------------------------------- */
+
+/* Pleine largeur plutôt qu'une grande tuile dans la grille : les captures sont en
+   16/9 et une tuile haute les recadrerait en portrait, tandis qu'une bande évite
+   la cellule vide que laisse un catalogue dont le compte ne tombe pas juste. */
+.hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    min-height: min(24rem, 62vh);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    overflow: hidden;
+}
+
+.hero__art {
+    position: absolute;
+    inset: 0;
+}
+
+.hero__art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* La capture est une image de jeu, pas un fond : sans ce voile, le texte devient
+   illisible dès qu'elle est claire. Le voile latéral protège la colonne de texte,
+   quelle que soit la capture — on ne les choisit pas pour ça. */
+.hero__art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            to right,
+            color-mix(in srgb, var(--bg) 90%, transparent) 0%,
+            color-mix(in srgb, var(--bg) 55%, transparent) 45%,
+            transparent 80%
+        ),
+        linear-gradient(
+            to top,
+            var(--bg-elevated) 3%,
+            color-mix(in srgb, var(--bg) 45%, transparent) 45%,
+            transparent 85%
+        );
+}
+
+.hero__body {
+    position: relative;
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.hero__eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+}
+
+.hero__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.4rem);
+    letter-spacing: -0.02em;
+}
+
+.hero__tagline {
+    margin: 0;
+    color: var(--text-muted);
+    max-width: 42ch;
+}
+
+.hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+}
+
+.hero__actions .button--ghost {
+    background: color-mix(in srgb, var(--bg) 65%, transparent);
+    color: var(--text);
 }
 
 .card {

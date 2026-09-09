@@ -65,14 +65,20 @@
   <data name="Home.Intro" xml:space="preserve">
     <value>Tout ce que j’ai publié sur itch.io, au même endroit.</value>
   </data>
+  <data name="Home.PlayableHere" xml:space="preserve">
+    <value>Jouable ici</value>
+  </data>
+  <data name="Home.SeeGame" xml:space="preserve">
+    <value>Voir la fiche</value>
+  </data>
   <data name="Home.Empty" xml:space="preserve">
     <value>Aucun jeu à afficher pour le moment.</value>
   </data>
   <data name="Home.EmptyFiltered" xml:space="preserve">
     <value>Aucun jeu ne correspond à ces filtres.</value>
   </data>
-  <data name="Home.ClearFilters" xml:space="preserve">
-    <value>Réinitialiser les filtres</value>
+  <data name="Home.Featured" xml:space="preserve">
+    <value>À la une</value>
   </data>
   <data name="Home.Unavailable" xml:space="preserve">
     <value>Le catalogue est momentanément indisponible. Réessayez dans quelques minutes.</value>
@@ -101,8 +107,14 @@
   <data name="Filter.Platform" xml:space="preserve">
     <value>Plateforme</value>
   </data>
+  <data name="Filter.PlayableHere" xml:space="preserve">
+    <value>Jouables ici</value>
+  </data>
   <data name="Filter.Any" xml:space="preserve">
     <value>Toutes</value>
+  </data>
+  <data name="Filter.All" xml:space="preserve">
+    <value>Tous</value>
   </data>
   <data name="Filter.Apply" xml:space="preserve">
     <value>Filtrer</value>

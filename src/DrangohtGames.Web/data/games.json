@@ -1,7 +1,7 @@
 {
   "$comment": [
-    "Contenu que l'API itch.io ne fournit pas : tags, moteur, description longue,",
-    "captures d'écran et traductions françaises.",
+    "Contenu que l'API itch.io ne fournit pas : mise en vitrine, tags, moteur, description",
+    "longue, captures d'écran et traductions françaises.",
     "",
     "La clé est le slug du jeu, c'est-à-dire le dernier segment de son URL itch.io :",
     "https://drangoht.itch.io/mon-super-jeu  ->  \"mon-super-jeu\".",
@@ -10,28 +10,74 @@
     "itch.io ; une entrée partielle complète ces données sans jamais les effacer.",
     "Les slugs qui ne correspondent à aucun jeu publié sont signalés au démarrage.",
     "",
+    "\"featured\": true désigne le jeu de la vitrine, en haut de l'accueil. Sans désignation,",
+    "le site retient le dernier jeu publié qui est jouable ici. Un seul jeu est mis en avant :",
+    "si plusieurs portent la marque, le premier de ce fichier l'emporte.",
+    "",
+    "La première capture sert d'illustration à la vitrine : la couverture itch.io ne fait que",
+    "315 pixels de large, trop peu pour un grand format.",
+    "",
     "Les sauts de ligne dans une description produisent des paragraphes distincts."
   ],
 
   "games": {
-    "exemple-a-remplacer": {
-      "tags": ["Arcade", "Runner"],
-      "engine": "Godot",
+    "chimera-protocol": {
+      "featured": true,
+      "tags": ["Action", "Roguelite", "Survivor-like"],
+      "engine": "Unity",
       "tagline": {
-        "fr": "Traduction française de l'accroche courte d'itch.io"
-      },
-      "description": {
-        "en": "First paragraph of the long description.\nSecond paragraph.",
-        "fr": "Premier paragraphe de la description longue.\nDeuxième paragraphe."
+        "fr": "Survivez à la Rouille Vivante, fusionnez vos armes, abattez le Cœur Rouillé."
       },
       "screenshots": [
-        {
-          "url": "https://img.itch.zone/.../capture-1.png",
-          "caption": {
-            "en": "The first level",
-            "fr": "Le premier niveau"
-          }
-        }
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM1Ni5wbmc=/original/fpz70k.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM5NC5wbmc=/original/rnuoG3.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM5Mi5wbmc=/original/nVmNvy.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM5MC5wbmc=/original/2FOHfy.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM4OS5wbmc=/original/UlMDj%2B.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM5My5wbmc=/original/MsaAgs.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM5MS5wbmc=/original/84YUCT.png" }
+      ]
+    },
+
+    "snake-snack": {
+      "tags": ["Arcade", "Retro"],
+      "engine": "Unity",
+      "tagline": {
+        "fr": "Le Snake classique."
+      },
+      "screenshots": [
+        { "url": "https://img.itch.zone/aW1hZ2UvNDk0NjU4MS8yOTY3NzQ0OS5wbmc=/original/8t0OzA.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDk0NjU4MS8yOTY3NzQ0OC5wbmc=/original/3e0vAe.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDk0NjU4MS8yOTY3NzQ1MC5wbmc=/original/hlcJdw.png" }
+      ]
+    },
+
+    "smily-volley": {
+      "tags": ["Sport", "Arcade"],
+      "engine": "Unity",
+      "tagline": {
+        "fr": "Du beach-volley pour blobs souriants : au clavier ou au doigt, seul ou à deux sur un écran."
+      },
+      "screenshots": [
+        { "url": "https://img.itch.zone/aW1hZ2UvNDkzMzY3Ny8yOTUwNzc3NC5wbmc=/original/P0BWoa.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDkzMzY3Ny8yOTUwNzc3Ny5wbmc=/original/tUac8i.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDkzMzY3Ny8yOTUwNzc3Ni5wbmc=/original/TAe4WI.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDkzMzY3Ny8yOTUwNzc3NS5wbmc=/original/gNbN9y.png" }
+      ]
+    },
+
+    "money-survivor": {
+      "tags": ["Action", "Roguelite", "Survivor-like"],
+      "engine": "Unity",
+      "tagline": {
+        "fr": "Survivez à l'apocalypse financière : PDG contre banquiers et patrons, améliorez vos armes et maximisez votre patrimoine."
+      },
+      "screenshots": [
+        { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjAyNTA0My5wbmc=/original/IHljd3.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjAzOTc1MS5wbmc=/original/s0Gt5H.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjA1MDkzNC5wbmc=/original/%2BiEThI.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjA1MDkzNy5wbmc=/original/JmjXwk.png" },
+        { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjA2MDUyNC5wbmc=/original/udN3%2FY.png" }
       ]
     }
   }
