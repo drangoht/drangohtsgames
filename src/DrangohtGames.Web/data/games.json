@@ -17,7 +17,10 @@
     "La première capture sert d'illustration à la vitrine : la couverture itch.io ne fait que",
     "315 pixels de large, trop peu pour un grand format.",
     "",
-    "Les sauts de ligne dans une description produisent des paragraphes distincts."
+    "Les sauts de ligne dans une description produisent des paragraphes distincts. La fiche",
+    "les rend en texte, sans titres ni listes : les descriptions reprises d'itch.io gardent",
+    "donc la prose — pitch, univers, principe — et laissent là-bas les tableaux de commandes,",
+    "la configuration requise et les remerciements, que le lien « Voir sur itch.io » dessert."
   ],
 
   "games": {
@@ -27,6 +30,10 @@
       "engine": "Unity",
       "tagline": {
         "fr": "Survivez à la Rouille Vivante, fusionnez vos armes, abattez le Cœur Rouillé."
+      },
+      "description": {
+        "en": "In a world where magic and machine merged into a corruption called the Living Rust, you are a Walker sent on an extraction mission into a fallen Sanctuary. Every run is a descent: the hordes thicken, time runs short, and a final boss eventually emerges. Surviving is no longer enough — you have to bring it down to extract.\nChimera Protocol takes the addictive Vampire Survivors loop (swarms, snowballing power, fast level-ups) and adds two hooks of its own. First, weapons that truly transform: when a weapon reaches its peak and meets the right passive module, it fuses into an evolved form — visually and mechanically different. Second, and this is the game's core idea: don't just kill the monsters — become them. Every kill fills an assimilation gauge tied to that enemy's archetype; fill it and you can graft a piece of the creature onto your own body. Your build doesn't just grow: it mutates, literally.\nWhen magic and machine intertwined, they birthed the Living Rust: a half-organic, half-mechanical corruption that devours the world and reanimates its husks. The Sanctuaries, last bastions, still hold Aether Cores — the only hope of pushing the Rust back. You are a Walker: a man, machine and magic fused fighter sent to extract from a fallen Sanctuary. Survive the Rust tides, harvest the Cores, and bring down what guards them before you extract.",
+        "fr": "Dans un monde où la magie et la machine ont fusionné en une corruption appelée la Rouille Vivante, vous êtes un Marcheur envoyé en mission d'extraction dans un Sanctuaire tombé. Chaque partie est une descente : les hordes s'épaississent, le temps manque, et un boss finit par émerger. Survivre ne suffit plus — il faut l'abattre pour s'extraire.\nChimera Protocol reprend la boucle de Vampire Survivors — les nuées, la puissance qui s'emballe, les montées de niveau rapides — et y ajoute deux idées. D'abord des armes qui se transforment vraiment : quand une arme atteint son maximum et rencontre le bon module passif, elle fusionne en une forme évoluée, différente à l'œil comme à la main. Ensuite, et c'est le cœur du jeu : ne vous contentez pas de tuer les monstres, devenez-les. Chaque mise à mort remplit une jauge d'assimilation liée à l'archétype de l'ennemi ; une fois pleine, elle vous laisse greffer un morceau de la créature sur votre propre corps. Votre panoplie ne fait pas que grandir : elle mute, littéralement.\nQuand la magie et la machine se sont entremêlées, elles ont enfanté la Rouille Vivante : une corruption mi-organique, mi-mécanique qui dévore le monde et en réanime les dépouilles. Les Sanctuaires, derniers bastions, abritent encore des Cœurs d'Éther, seul espoir de repousser la Rouille. Vous êtes un Marcheur, combattant né de la fusion de l'homme, de la machine et de la magie, envoyé s'extraire d'un Sanctuaire tombé. Survivez aux marées de Rouille, récoltez les Cœurs, et abattez ce qui les garde avant de vous extraire."
       },
       "screenshots": [
         { "url": "https://img.itch.zone/aW1hZ2UvNDcyODY3MS8yOTE4OTM1Ni5wbmc=/original/fpz70k.png" },
@@ -45,6 +52,10 @@
       "tagline": {
         "fr": "Le Snake classique."
       },
+      "description": {
+        "en": "Steer a snake that grows with every bite, until its own body leaves no way through.\nNo twist, no power-ups, no enemy: what stops you is your own tail. The edges of the grid kill — they do not wrap around — so every death stays attributable to a turn, and there is always a sentence in your head as you restart: \"I should have gone right\".\nA game restarts in one key with zero waiting.\nIt plays on a phone, in landscape: swipe to turn, or use the pad in the right-hand margin. The controls take nothing from the playfield — they live in the margin the grid already left empty.\nWhat is not in it yet: the graphics are still shapes drawn by code rather than hand-made art. This is a playable base, not a finished version.",
+        "fr": "Dirigez un serpent qui grandit à chaque bouchée, jusqu'à ce que son propre corps ne laisse plus de passage.\nPas de trouvaille, pas de bonus, pas d'ennemi : ce qui vous arrête, c'est votre propre queue. Les bords de la grille tuent — ils ne renvoient pas de l'autre côté — si bien que chaque mort reste imputable à un virage, et qu'une phrase revient toujours au moment de recommencer : « j'aurais dû aller à droite ».\nUne partie redémarre d'une seule touche, sans attente.\nLe jeu tourne sur téléphone, en paysage : balayez pour tourner, ou servez-vous du pavé dans la marge de droite. Les commandes ne prennent rien au terrain de jeu — elles occupent la marge que la grille laissait déjà vide.\nCe qui n'y est pas encore : les graphismes restent des formes tracées par le code plutôt que des dessins. C'est une base jouable, pas une version finie."
+      },
       "screenshots": [
         { "url": "https://img.itch.zone/aW1hZ2UvNDk0NjU4MS8yOTY3NzQ0OS5wbmc=/original/8t0OzA.png" },
         { "url": "https://img.itch.zone/aW1hZ2UvNDk0NjU4MS8yOTY3NzQ0OC5wbmc=/original/3e0vAe.png" },
@@ -57,6 +68,10 @@
       "engine": "Unity",
       "tagline": {
         "fr": "Du beach-volley pour blobs souriants : au clavier ou au doigt, seul ou à deux sur un écran."
+      },
+      "description": {
+        "en": "Two blobs, one net, one ball. Each side is a smiling half-circle that can do exactly three things: go left, go right, jump. The whole game lives in the fourth one, which has no button: where the ball hits you.\nThe hit is not a physics bounce: the ball leaves radially from the centre of the blob. Touching it with your side is how you aim, dropping onto it is how you spike. You learn to place your blob, not to press faster.\nThe game plays on phones and tablets, for one player and for two, holding the device in landscape. The controls appear on screen the moment a finger touches it — nothing shows up on a desktop machine.",
+        "fr": "Deux blobs, un filet, un ballon. Chaque camp est un demi-cercle souriant qui sait faire exactement trois choses : aller à gauche, aller à droite, sauter. Tout le jeu tient dans la quatrième, celle qui n'a pas de bouton : l'endroit où le ballon vous touche.\nLa frappe n'est pas un rebond physique : le ballon repart radialement depuis le centre du blob. Le toucher du flanc, c'est viser ; lui retomber dessus, c'est smasher. On apprend à placer son blob, pas à appuyer plus vite.\nLe jeu se joue sur téléphone et sur tablette, à un ou à deux, l'appareil tenu en paysage. Les commandes apparaissent à l'écran dès qu'un doigt s'y pose — rien ne s'affiche sur un ordinateur."
       },
       "screenshots": [
         { "url": "https://img.itch.zone/aW1hZ2UvNDkzMzY3Ny8yOTUwNzc3NC5wbmc=/original/P0BWoa.png" },
@@ -71,6 +86,10 @@
       "engine": "Unity",
       "tagline": {
         "fr": "Survivez à l'apocalypse financière : PDG contre banquiers et patrons, améliorez vos armes et maximisez votre patrimoine."
+      },
+      "description": {
+        "en": "Money Survivor is a fast-paced top-down action roguelike (bullet-heaven style) set in a cyberpunk financial apocalypse. You play as a corporate CEO defending yourself with financially themed weapons against waves of bankers, auditors, and bosses.\nSurvive: move through an office arena. Don't leave the play area. Avoid obstacles. Enemies and bosses get stronger over time.\nFight: pick up to 3 weapons — Aimed Bullet, Coin Toss, Bill Whip, Compound Interest, Credit Card, Cryptominer, Stock Options. Each weapon can be upgraded to level 10.\nLevel up: collect XP orbs, fill the bar, then choose one of three cards — new weapon, weapon upgrade, or power-up. Bosses drop chests with random rewards.\nPower-ups: Health Insurance, Gold Rush, Hedge Fund, Black Market, Diversified Portfolio, Insider Trading, Tax Evasion, Overclock, Duplicate Projectile.\nBosses: IRS, CEO, and MegaBoss spawn on timers. They're big, hit hard, and drop chests. Survive long enough and the pace becomes insane.\nYour score is your Net Worth (enemies killed × 50). Only your best run is saved and shown on the main menu and game over screen.",
+        "fr": "Money Survivor est un roguelike d'action nerveux en vue de dessus, dans l'esprit bullet-heaven, planté dans une apocalypse financière cyberpunk. Vous incarnez un PDG qui se défend à coups d'armes tirées de la finance contre des vagues de banquiers, d'auditeurs et de patrons.\nSurvivre : déplacez-vous dans une arène de bureaux. Ne quittez pas la zone de jeu. Évitez les obstacles. Ennemis et boss se renforcent avec le temps.\nCombattre : emportez jusqu'à 3 armes — Tir visé, Lancer de pièces, Fouet à billets, Intérêts composés, Carte de crédit, Cryptomineur, Stock-options. Chacune monte jusqu'au niveau 10.\nMonter en niveau : ramassez les orbes d'expérience, remplissez la barre, puis choisissez une carte parmi trois — nouvelle arme, amélioration, ou bonus. Les boss lâchent des coffres au contenu aléatoire.\nBonus : Assurance santé, Ruée vers l'or, Fonds spéculatif, Marché noir, Portefeuille diversifié, Délit d'initié, Évasion fiscale, Overclock, Projectile dupliqué.\nBoss : le fisc, le PDG et le MégaBoss apparaissent à intervalles réguliers. Ils sont énormes, frappent fort et lâchent des coffres. Tenez assez longtemps et le rythme devient délirant.\nVotre score est votre patrimoine — les ennemis tués multipliés par 50. Seule votre meilleure partie est conservée, affichée au menu principal et à l'écran de fin."
       },
       "screenshots": [
         { "url": "https://img.itch.zone/aW1hZ2UvNDM1OTg4My8yNjAyNTA0My5wbmc=/original/IHljd3.png" },
