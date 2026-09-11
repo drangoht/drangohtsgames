@@ -5,7 +5,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark light" />
-    <base href="/" />
+    @* La base porte le préfixe de langue (ADR 0008) : tous les liens internes sont
+       relatifs et se résolvent contre elle, donc ils restent dans la langue de la page. *@
+    <base href="@BaseHref" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["DrangohtGames.Web.styles.css"]" />
@@ -20,3 +22,14 @@
 </body>
 
 </html>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    /// <summary>
+    /// Base de résolution des liens de la page, préfixe de langue compris. Elle se termine
+    /// par une barre oblique, sans quoi le dernier segment serait remplacé et non prolongé.
+    /// </summary>
+    private string BaseHref => new Uri(Navigation.BaseUri).AbsolutePath;
+}

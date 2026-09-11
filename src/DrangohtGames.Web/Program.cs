@@ -76,6 +76,10 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
     options.ApplyCurrentCultureToResponseHeaders = true;
+
+    // Le chemin fait foi : une adresse française sert du français, quelle que soit la
+    // préférence du navigateur. L'en-tête ne décide plus que de la destination de la racine.
+    options.RequestCultureProviders.Insert(0, CulturePrefix.FromPath);
 });
 
 // --- Jeux auto-hébergés (ADR 0007) --------------------------------------------------------
@@ -141,7 +145,18 @@ app.UseWhen(
     static context => HttpMethods.IsGet(context.Request.Method)
                       || HttpMethods.IsHead(context.Request.Method),
     branch => branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
+// La langue est portée par le chemin (ADR 0008). Le préfixe est détaché avant la
+// localisation, qui le lit ; les adresses non préfixées sont redirigées après elle, la
+// racine ayant besoin de connaître la langue négociée pour choisir sa destination.
+app.UseCulturePathPrefix();
+
+// Le routage est appelé ici explicitement : à défaut, ASP.NET Core l'insère en tête du
+// pipeline, où il apparierait le chemin avant que son préfixe de langue en soit détaché —
+// et aucune route ne correspondrait.
+app.UseRouting();
+
 app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
+app.UseCulturePathRedirects();
 app.UseAntiforgery();
 
 app.UseStaticFiles();
@@ -165,7 +180,6 @@ app.MapRazorComponents<App>().Add(static endpoint =>
 // parce qu'une API tierce est tombée le ferait redémarrer en boucle sans rien réparer.
 app.MapHealthChecks("/health").AllowAnonymous();
 
-app.MapCultureEndpoints();
 app.MapSeoEndpoints();
 
 await app.RunAsync().ConfigureAwait(false);

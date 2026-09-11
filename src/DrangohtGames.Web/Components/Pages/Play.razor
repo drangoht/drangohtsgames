@@ -8,7 +8,7 @@
     <PageTitle>@T["NotFound.Title"] — @Site.Value.Name</PageTitle>
     <h1 class="page-title">@T["NotFound.Title"]</h1>
     <p>@T["NotFound.Body"]</p>
-    <a class="button button--primary" href="/">@T["NotFound.Home"]</a>
+    <a class="button button--primary" href=".">@T["NotFound.Home"]</a>
 }
 else
 {
@@ -19,7 +19,7 @@ else
     </HeadContent>
 
     <nav class="breadcrumb">
-        <a href="/games/@_game.Slug.Value">← @BackLabel</a>
+        <a href="games/@_game.Slug.Value">← @BackLabel</a>
     </nav>
 
     <h1 class="page-title">@_game.Title</h1>

@@ -41,8 +41,13 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
         response.Content.Headers.ContentType!.MediaType.ShouldBe("application/xml");
 
         var xml = await response.Content.ReadAsStringAsync(CancellationToken.None);
-        xml.ShouldContain("http://localhost/games/x-moon");
-        xml.ShouldContain("http://localhost/about");
+        // Depuis l'ADR 0008, chaque page indexable existe dans les deux langues, et le
+        // plan les annonce toutes : une version absente du plan n'est explorée que par
+        // hasard, au gré des liens.
+        xml.ShouldContain("http://localhost/en/games/x-moon");
+        xml.ShouldContain("http://localhost/fr/games/x-moon");
+        xml.ShouldContain("http://localhost/en/about");
+        xml.ShouldContain("http://localhost/fr/about");
 
         // La page de jeu porte déjà `noindex` : l'annoncer au sitemap serait contradictoire.
         xml.ShouldNotContain("/play");
@@ -51,9 +56,9 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
     [Fact]
     public async Task FicheJeu_DesigneSonAdresseCanonique()
     {
-        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/games/x-moon", CancellationToken.None);
 
-        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/games/x-moon\"");
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/en/games/x-moon\"");
     }
 
     [Fact]
@@ -61,17 +66,17 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
     {
         // Chaque pastille produit une URL : sans canonique, la combinatoire complète des
         // filtres serait indexée comme autant de copies de l'accueil.
-        var html = await CreateClient().GetStringAsync("/?tag=Arcade&engine=Unity", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/?tag=Arcade&engine=Unity", CancellationToken.None);
 
-        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/\"");
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/en/\"");
     }
 
     [Fact]
     public async Task FicheJeu_PorteUneCarteDePartageComplete()
     {
-        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/games/x-moon", CancellationToken.None);
 
-        html.ShouldContain("property=\"og:url\" content=\"http://localhost/games/x-moon\"");
+        html.ShouldContain("property=\"og:url\" content=\"http://localhost/en/games/x-moon\"");
         html.ShouldContain("property=\"og:title\" content=\"X-Moon\"");
         html.ShouldContain("property=\"og:site_name\" content=\"Drangoht Games\"");
         html.ShouldContain("name=\"twitter:card\" content=\"summary_large_image\"");
@@ -82,7 +87,7 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
     {
         // La couverture itch.io ne fait que 315 pixels de large : une grande carte de
         // partage la rendrait floue.
-        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/games/x-moon", CancellationToken.None);
 
         html.ShouldContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-shot-1.png\"");
         html.ShouldNotContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-cover.png\"");
@@ -91,9 +96,9 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
     [Fact]
     public async Task Accueil_PorteUneCarteDePartage()
     {
-        var html = await CreateClient().GetStringAsync("/", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/", CancellationToken.None);
 
-        html.ShouldContain("property=\"og:url\" content=\"http://localhost/\"");
+        html.ShouldContain("property=\"og:url\" content=\"http://localhost/en/\"");
         html.ShouldContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-shot-1.png\"");
     }
 
@@ -103,7 +108,7 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
         // Razor encode le « + » du type de média en « &#x2B; », qu'un analyseur HTML
         // redécode : c'est le document décodé que lit le moteur de recherche.
         var html = WebUtility.HtmlDecode(
-            await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None));
+            await CreateClient().GetStringAsync("/en/games/x-moon", CancellationToken.None));
 
         html.ShouldContain("<script type=\"application/ld+json\">");
         html.ShouldContain("\"@type\":\"VideoGame\"");
@@ -113,8 +118,8 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
     [Fact]
     public async Task APropos_DesigneSonAdresseCanonique()
     {
-        var html = await CreateClient().GetStringAsync("/about", CancellationToken.None);
+        var html = await CreateClient().GetStringAsync("/en/about", CancellationToken.None);
 
-        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/about\"");
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/en/about\"");
     }
 }

@@ -41,11 +41,11 @@ else
                 <div class="hero__actions">
                     @if (hero.IsSelfHosted)
                     {
-                        <a class="button button--primary" href="/games/@hero.Slug.Value/play">
+                        <a class="button button--primary" href="games/@hero.Slug.Value/play">
                             @T["Game.PlayInBrowser"]
                         </a>
                     }
-                    <a class="button button--ghost" href="/games/@hero.Slug.Value">@T["Home.SeeGame"]</a>
+                    <a class="button button--ghost" href="games/@hero.Slug.Value">@T["Home.SeeGame"]</a>
                 </div>
             </div>
         </article>
@@ -56,7 +56,7 @@ else
     <section class="filters" aria-label="@T["Filter.Legend"]">
         <ul class="chips">
             <li>
-                <a class="chip @(_filter.IsActive ? null : "chip--on")" href="/">@T["Filter.All"]</a>
+                <a class="chip @(_filter.IsActive ? null : "chip--on")" href=".">@T["Filter.All"]</a>
             </li>
             <li>
                 <a class="chip @(PlayableOnly ? "chip--on" : null)" href="@HrefTogglingPlayable()">
@@ -224,7 +224,7 @@ else
             query["playable"] = "true";
         }
 
-        return QueryHelpers.AddQueryString("/", query);
+        return QueryHelpers.AddQueryString(".", query);
     }
 
     private static void AddIfSet(Dictionary<string, string?> query, string name, string? value)

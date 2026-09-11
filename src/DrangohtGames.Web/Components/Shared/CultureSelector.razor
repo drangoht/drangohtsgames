@@ -1,9 +1,9 @@
 @inject IStringLocalizer<SharedResources> T
 @inject NavigationManager Navigation
 
-@* Un formulaire POST par langue : le choix persiste dans un cookie, et le site reste
-   utilisable sans JavaScript — cohérent avec un rendu serveur statique. *@
-<div class="culture" role="group" aria-label="@T["Language.Label"]">
+@* Depuis l'ADR 0008, la langue est portée par le chemin : changer de langue, c'est suivre
+   un lien vers la même page sous l'autre préfixe. Rien à mémoriser, rien à poster. *@
+<nav class="culture" aria-label="@T["Language.Label"]">
     @foreach (var culture in SupportedCultures.All)
     {
         var isCurrent = string.Equals(
@@ -11,30 +11,22 @@
             CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
             StringComparison.OrdinalIgnoreCase);
 
-        <form method="post" action="/culture" class="culture__form">
-            <AntiforgeryToken />
-            <input type="hidden" name="culture" value="@culture" />
-            <input type="hidden" name="redirectUri" value="@CurrentRelativeUri" />
-            <button type="submit"
-                    class="culture__button @(isCurrent ? "culture__button--current" : null)"
-                    aria-current="@(isCurrent ? "true" : null)"
-                    lang="@culture">
-                @SupportedCultures.DisplayNameOf(culture)
-            </button>
-        </form>
+        @* Absolu, à dessein : ce lien quitte la base de la page pour celle de l'autre
+           langue, alors qu'un lien relatif y resterait. *@
+        <a class="culture__button @(isCurrent ? "culture__button--current" : null)"
+           href="/@culture/@CurrentPageWithinCulture"
+           hreflang="@culture"
+           lang="@culture"
+           aria-current="@(isCurrent ? "true" : null)">
+            @SupportedCultures.DisplayNameOf(culture)
+        </a>
     }
-</div>
+</nav>
 
 @code {
     /// <summary>
-    /// Chemin courant, pour revenir sur la même page après le changement de langue.
+    /// Page courante vue depuis sa langue : ce qui suit le préfixe, critères de filtre
+    /// compris, pour que changer de langue ne renvoie pas à l'accueil.
     /// </summary>
-    private string CurrentRelativeUri
-    {
-        get
-        {
-            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-            return relative.Length == 0 ? "/" : "/" + relative;
-        }
-    }
+    private string CurrentPageWithinCulture => Navigation.ToBaseRelativePath(Navigation.Uri);
 }

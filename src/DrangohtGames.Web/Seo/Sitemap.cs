@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Xml.Linq;
 using DrangohtGames.Web.Games;
+using DrangohtGames.Web.Localization;
 
 namespace DrangohtGames.Web.Seo;
 
@@ -15,11 +16,17 @@ public static class Sitemap
         ArgumentNullException.ThrowIfNull(games);
         ArgumentNullException.ThrowIfNull(baseUri);
 
+        // Chaque page existe dans chaque langue et chacune a sa propre adresse (ADR 0008) :
+        // le plan les annonce toutes, faute de quoi une version ne serait explorée qu'au
+        // hasard des liens.
         var urlset = new XElement(
             Ns + "urlset",
-            Url(baseUri, string.Empty),
-            Url(baseUri, "about"),
-            games.Select(game => Url(baseUri, $"games/{game.Slug.Value}", game.PublishedAt)));
+            SupportedCultures.All.SelectMany(culture => new[]
+            {
+                Url(baseUri, $"{culture}/"),
+                Url(baseUri, $"{culture}/about"),
+            }.Concat(games.Select(game =>
+                Url(baseUri, $"{culture}/games/{game.Slug.Value}", game.PublishedAt)))));
 
         return new XDocument(new XDeclaration("1.0", "utf-8", null), urlset).ToString();
     }

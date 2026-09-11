@@ -9,7 +9,7 @@
     <PageTitle>@T["NotFound.Title"] — @Site.Value.Name</PageTitle>
     <h1 class="page-title">@T["NotFound.Title"]</h1>
     <p>@T["NotFound.Body"]</p>
-    <a class="button button--primary" href="/">@T["NotFound.Home"]</a>
+    <a class="button button--primary" href=".">@T["NotFound.Home"]</a>
 }
 else
 {
@@ -21,7 +21,7 @@ else
              StructuredData="@StructuredData" />
 
     <nav class="breadcrumb">
-        <a href="/">← @T["Game.BackToGames"]</a>
+        <a href=".">← @T["Game.BackToGames"]</a>
     </nav>
 
     <article class="game">
@@ -72,7 +72,7 @@ else
                 @if (_game.IsSelfHosted)
                 {
                     @* Le build est hébergé ici (ADR 0007) : le visiteur joue sans partir. *@
-                    <a class="button button--primary" href="/games/@_game.Slug.Value/play">
+                    <a class="button button--primary" href="games/@_game.Slug.Value/play">
                         @T["Game.PlayInBrowser"]
                     </a>
                     <a class="button" href="@_game.ItchUrl"
@@ -97,7 +97,7 @@ else
                 <ul class="tags">
                     @foreach (var tag in _game.Tags)
                     {
-                        <li><a class="tag" href="/?tag=@Uri.EscapeDataString(tag)">@tag</a></li>
+                        <li><a class="tag" href="?tag=@Uri.EscapeDataString(tag)">@tag</a></li>
                     }
                 </ul>
             </section>

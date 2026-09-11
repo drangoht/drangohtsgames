@@ -1,6 +1,6 @@
 # 8. Porter la langue dans le chemin, et déclarer les versions l'une à l'autre
 
-- **Statut** : proposé
+- **Statut** : accepté
 - **Date** : 2026-09-11
 
 ## Contexte
@@ -54,7 +54,8 @@ s'installent.
 
 ### B — Préfixe de chemin : `/en/…` et `/fr/…`
 
-La culture devient un segment de route, résolu par `RouteDataRequestCultureProvider`. Chaque
+La culture devient un segment de chemin, détaché à l'entrée du pipeline et porté en
+`PathBase`, de sorte qu'aucune route de page n'ait à le connaître. Chaque
 page indexable existe à deux adresses, qui se déclarent mutuellement par `hreflang`, avec un
 `x-default` pointant sur l'anglais. Le plan du site double.
 
@@ -96,7 +97,7 @@ ce coût pour deux langues servies par le même processus, à partir des mêmes 
 
 ## Décision
 
-Nous proposons de retenir **B — le préfixe de chemin**.
+Nous retenons **B — le préfixe de chemin**.
 
 Trois critères tranchent :
 
@@ -110,7 +111,7 @@ Trois critères tranchent :
    rencontre vraiment, et aucune balise `hreflang` ne le résout tant que l'adresse ne porte
    pas la langue.
 
-Cette proposition dérogerait à YAGNI si elle anticipait un besoin : ce n'est pas le cas.
+Cette décision dérogerait à YAGNI si elle anticipait un besoin : ce n'est pas le cas.
 Elle répare un contenu rendu invisible par la décision précédente, et choisit la forme
 d'URL pendant qu'un choix est encore gratuit. La règle du projet réserve précisément cette
 exception aux **frontières et aux contrats publics**.
@@ -161,13 +162,15 @@ recherche.
 
 ## Suivi
 
-- [ ] Trancher entre 301 et canonique pour les adresses sans préfixe déjà publiées.
+- [x] Les adresses sans préfixe redirigent en **301** vers leur version anglaise ; seule
+      la racine négocie, en **302**, puisque sa destination dépend du visiteur.
 - [ ] Un test vérifie qu'une page indexable déclare un `hreflang` **réciproque** vers chaque
       autre langue, plus `x-default` — la réciprocité manquante est l'erreur classique, et
       elle ne se voit pas à l'œil.
-- [ ] Un test vérifie que `/play/{slug}`, `/health` et les fichiers statiques restent
-      accessibles **sans** préfixe de langue.
-- [ ] Le plan du site porte une entrée par langue et par page, avec ses alternates.
-- [ ] Retirer `POST /culture`, le cookie de culture et leurs tests une fois le sélecteur
-      converti en lien — dans un commit séparé du changement de routes.
+- [x] Un test vérifie que `/health`, `/robots.txt` et `/sitemap.xml` restent accessibles
+      **sans** préfixe, et qu'une feuille de style répond identiquement avec et sans.
+- [ ] Le plan du site porte une entrée par langue et par page — fait — **avec ses
+      alternates** — reste à faire avec les `hreflang`.
+- [x] `POST /culture`, le cookie de culture et leurs tests sont retirés : le sélecteur
+      est devenu un lien, et rien d'autre ne les utilisait.
 - [ ] Mettre à jour `README.md` (tableau des routes, section sur les langues) et `CLAUDE.md`.
