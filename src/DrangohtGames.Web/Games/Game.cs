@@ -51,6 +51,15 @@ public sealed record Game
     /// <summary>Captures d'écran, alimentées par les métadonnées locales.</summary>
     public IReadOnlyList<Screenshot> Screenshots { get; init; } = [];
 
+    /// <summary>
+    /// Illustration du jeu en grand format : la première capture, à défaut la couverture.
+    /// </summary>
+    /// <remarks>
+    /// La couverture itch.io ne fait que 315 pixels de large — assez pour une carte de la
+    /// grille, trop peu pour la vitrine de l'accueil comme pour un aperçu de partage.
+    /// </remarks>
+    public Uri? ShowcaseImageUrl => Screenshots.Count > 0 ? Screenshots[0].Url : CoverUrl;
+
     /// <summary>Indique qu'un widget itch.io peut être embarqué pour ce jeu.</summary>
     public bool IsEmbeddable { get; init; }
 

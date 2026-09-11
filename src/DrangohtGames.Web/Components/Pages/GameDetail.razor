@@ -14,15 +14,11 @@
 else
 {
     <PageTitle>@_game.Title — @Site.Value.Name</PageTitle>
-    <HeadContent>
-        <meta name="description" content="@(Tagline ?? _game.Title)" />
-        <meta property="og:title" content="@_game.Title" />
-        <meta property="og:type" content="website" />
-        @if (_game.CoverUrl is not null)
-        {
-            <meta property="og:image" content="@_game.CoverUrl" />
-        }
-    </HeadContent>
+    <SeoHead CanonicalPath="@($"/games/{_game.Slug.Value}")"
+             Title="@_game.Title"
+             Description="@(Tagline ?? _game.Title)"
+             ImageUrl="@_game.ShowcaseImageUrl"
+             StructuredData="@StructuredData" />
 
     <nav class="breadcrumb">
         <a href="/">← @T["Game.BackToGames"]</a>
@@ -180,6 +176,12 @@ else
     private string? Tagline => _game?.Tagline.For(CultureInfo.CurrentUICulture);
 
     private string? Description => _game?.Description.For(CultureInfo.CurrentUICulture);
+
+    /// <summary>Fiche schema.org du jeu, pour que le moteur en fasse un résultat enrichi.</summary>
+    private string StructuredData => GameStructuredData.ToJsonLd(
+        _game!,
+        new Uri(new Uri(Navigation.BaseUri), $"games/{_game!.Slug.Value}"),
+        Description ?? Tagline);
 
     /// <summary>
     /// Adresse du widget officiel itch.io, indexé par identifiant de jeu.

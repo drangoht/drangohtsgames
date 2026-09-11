@@ -1,0 +1,120 @@
+using System.Net;
+using Shouldly;
+
+namespace DrangohtGames.Tests.Integration;
+
+/// <summary>
+/// Ce que le site présente aux moteurs de recherche et aux aperçus de partage.
+/// </summary>
+[Trait("Category", "Integration")]
+public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
+{
+    private readonly SiteFactory _factory;
+
+    public SeoTests(SiteFactoryFixture fixture)
+    {
+        ArgumentNullException.ThrowIfNull(fixture);
+        _factory = fixture.Factory;
+    }
+
+    private HttpClient CreateClient() => _factory.CreateClient();
+
+    [Fact]
+    public async Task RobotsTxt_AutoriseLExplorationEtDesigneLePlanDuSite()
+    {
+        using var response = await CreateClient().GetAsync("/robots.txt", CancellationToken.None);
+
+        response.EnsureSuccessStatusCode();
+        response.Content.Headers.ContentType!.MediaType.ShouldBe("text/plain");
+
+        var texte = await response.Content.ReadAsStringAsync(CancellationToken.None);
+        texte.ShouldContain("User-agent: *");
+        texte.ShouldContain("Sitemap: http://localhost/sitemap.xml");
+    }
+
+    [Fact]
+    public async Task SitemapXml_ListeLesPagesIndexablesDuSite()
+    {
+        using var response = await CreateClient().GetAsync("/sitemap.xml", CancellationToken.None);
+
+        response.EnsureSuccessStatusCode();
+        response.Content.Headers.ContentType!.MediaType.ShouldBe("application/xml");
+
+        var xml = await response.Content.ReadAsStringAsync(CancellationToken.None);
+        xml.ShouldContain("http://localhost/games/x-moon");
+        xml.ShouldContain("http://localhost/about");
+
+        // La page de jeu porte déjà `noindex` : l'annoncer au sitemap serait contradictoire.
+        xml.ShouldNotContain("/play");
+    }
+
+    [Fact]
+    public async Task FicheJeu_DesigneSonAdresseCanonique()
+    {
+        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/games/x-moon\"");
+    }
+
+    [Fact]
+    public async Task Accueil_SousFiltre_DesigneLAccueilNuCommeAdresseCanonique()
+    {
+        // Chaque pastille produit une URL : sans canonique, la combinatoire complète des
+        // filtres serait indexée comme autant de copies de l'accueil.
+        var html = await CreateClient().GetStringAsync("/?tag=Arcade&engine=Unity", CancellationToken.None);
+
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/\"");
+    }
+
+    [Fact]
+    public async Task FicheJeu_PorteUneCarteDePartageComplete()
+    {
+        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+
+        html.ShouldContain("property=\"og:url\" content=\"http://localhost/games/x-moon\"");
+        html.ShouldContain("property=\"og:title\" content=\"X-Moon\"");
+        html.ShouldContain("property=\"og:site_name\" content=\"Drangoht Games\"");
+        html.ShouldContain("name=\"twitter:card\" content=\"summary_large_image\"");
+    }
+
+    [Fact]
+    public async Task FicheJeu_IllustreLePartageAvecUneCapturePlutotQuLaCouverture()
+    {
+        // La couverture itch.io ne fait que 315 pixels de large : une grande carte de
+        // partage la rendrait floue.
+        var html = await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None);
+
+        html.ShouldContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-shot-1.png\"");
+        html.ShouldNotContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-cover.png\"");
+    }
+
+    [Fact]
+    public async Task Accueil_PorteUneCarteDePartage()
+    {
+        var html = await CreateClient().GetStringAsync("/", CancellationToken.None);
+
+        html.ShouldContain("property=\"og:url\" content=\"http://localhost/\"");
+        html.ShouldContain("property=\"og:image\" content=\"https://img.itch.zone/x-moon-shot-1.png\"");
+    }
+
+    [Fact]
+    public async Task FicheJeu_PorteLesDonneesStructureesDuJeu()
+    {
+        // Razor encode le « + » du type de média en « &#x2B; », qu'un analyseur HTML
+        // redécode : c'est le document décodé que lit le moteur de recherche.
+        var html = WebUtility.HtmlDecode(
+            await CreateClient().GetStringAsync("/games/x-moon", CancellationToken.None));
+
+        html.ShouldContain("<script type=\"application/ld+json\">");
+        html.ShouldContain("\"@type\":\"VideoGame\"");
+        html.ShouldContain("\"name\":\"X-Moon\"");
+    }
+
+    [Fact]
+    public async Task APropos_DesigneSonAdresseCanonique()
+    {
+        var html = await CreateClient().GetStringAsync("/about", CancellationToken.None);
+
+        html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/about\"");
+    }
+}

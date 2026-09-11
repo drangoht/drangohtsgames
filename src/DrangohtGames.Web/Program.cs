@@ -7,6 +7,7 @@ using DrangohtGames.Web.Games.ItchIo;
 using DrangohtGames.Web.Games.SelfHosted;
 using DrangohtGames.Web.Games.Snapshots;
 using DrangohtGames.Web.Localization;
+using DrangohtGames.Web.Seo;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.StaticFiles;
@@ -165,6 +166,7 @@ app.MapRazorComponents<App>().Add(static endpoint =>
 app.MapHealthChecks("/health").AllowAnonymous();
 
 app.MapCultureEndpoints();
+app.MapSeoEndpoints();
 
 await app.RunAsync().ConfigureAwait(false);
 

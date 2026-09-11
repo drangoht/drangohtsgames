@@ -58,13 +58,26 @@ distinct de `HTTP_PORT` qui décrit le serveur.
 | `/` | Grille des jeux, avec recherche et filtres par tag, moteur et plateforme |
 | `/games/{slug}` | Fiche du jeu : description, captures, tags, widget itch.io embarqué |
 | `/about` | Présentation et liens |
+| `/games/{slug}/play` | Le jeu lui-même, quand son build est hébergé ici (ADR 0007) |
 | `/health` | Sonde de vivacité, volontairement indépendante d'itch.io |
+| `/robots.txt`, `/sitemap.xml` | Ce que le site publie à l'intention des robots d'indexation |
 
 Les filtres passent par la chaîne de requête : une sélection produit une **URL partageable**,
 et l'ensemble fonctionne sans JavaScript.
 
 Le sélecteur de langue mémorise le choix dans un cookie. Sans choix explicite, la langue
 suit l'en-tête `Accept-Language` du navigateur, avec l'anglais par défaut.
+
+Chaque page indexable désigne son **adresse canonique** et porte sa **carte de partage**
+(Open Graph et Twitter) : sans cela, la combinatoire des filtres de l'accueil serait indexée
+comme autant de copies. La fiche d'un jeu ajoute ses **données structurées** `VideoGame`
+(schema.org), qui donnent au moteur de recherche le prix, les plateformes et la date de
+sortie. Tout cela est regroupé dans le composant `SeoHead` — plusieurs `<HeadContent>` sur
+une même page ne s'additionnent pas, le dernier rendu efface les précédents.
+
+L'illustration de la vitrine et celle des cartes de partage suivent la même règle
+(`Game.ShowcaseImageUrl`) : la première capture, à défaut la couverture itch.io — qui ne
+fait que 315 pixels de large.
 
 ---
 
@@ -291,5 +304,8 @@ Trois familles de tests :
 
 - **Politique de sécurité de contenu (CSP)** : non posée, pour ne pas risquer de casser le
   widget itch.io embarqué et les scripts de Blazor. À ajouter en la validant page par page.
-- **`sitemap.xml` et données structurées JSON-LD** : utiles au référencement d'une vitrine.
+- **URL par langue et `hreflang`** : la langue vit dans un cookie, pas dans l'URL. Un moteur
+  n'indexe donc qu'une seule version du site, et un lien partagé n'ouvre pas forcément la
+  langue du contenu partagé. À trancher dans un ADR avant d'être implémenté.
+- **Flux RSS/Atom des sorties** : le canal de suivi le moins coûteux pour une vitrine de jeux.
 - **Analyse SonarCloud** dans la CI, comme sur `Algorithme-de-Huffman`.

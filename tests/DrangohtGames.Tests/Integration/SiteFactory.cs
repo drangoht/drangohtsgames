@@ -31,6 +31,8 @@ internal sealed class SiteFactory : WebApplicationFactory<Program>
         .WithTags("Arcade")
         .WithEngine("Unity")
         .WithPlatforms(GamePlatforms.Windows | GamePlatforms.Linux)
+        .WithCoverUrl("https://img.itch.zone/x-moon-cover.png")
+        .WithScreenshots("https://img.itch.zone/x-moon-shot-1.png")
         .Build();
 
     /// <summary>Un jeu publié sur itch.io dont le build n'est pas hébergé ici (ADR 0007).</summary>

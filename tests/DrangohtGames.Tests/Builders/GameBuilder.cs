@@ -17,6 +17,8 @@ internal sealed class GameBuilder
     private GamePlatforms _platforms = GamePlatforms.Windows;
     private IReadOnlyList<string> _tags = [];
     private string? _engine;
+    private Uri? _coverUrl;
+    private IReadOnlyList<Screenshot> _screenshots = [];
     private bool _isSelfHosted;
     private bool _isFeatured;
 
@@ -74,6 +76,18 @@ internal sealed class GameBuilder
         return this;
     }
 
+    public GameBuilder WithCoverUrl(string coverUrl)
+    {
+        _coverUrl = new Uri(coverUrl);
+        return this;
+    }
+
+    public GameBuilder WithScreenshots(params string[] urls)
+    {
+        _screenshots = [.. urls.Select(url => new Screenshot(new Uri(url), LocalizedText.Empty))];
+        return this;
+    }
+
     public GameBuilder WithSelfHosted()
     {
         _isSelfHosted = true;
@@ -98,6 +112,8 @@ internal sealed class GameBuilder
         Platforms = _platforms,
         Tags = _tags,
         Engine = _engine,
+        CoverUrl = _coverUrl,
+        Screenshots = _screenshots,
         IsSelfHosted = _isSelfHosted,
         IsFeatured = _isFeatured,
     };

@@ -5,9 +5,10 @@
 @inject IOptions<SiteOptions> Site
 
 <PageTitle>@Site.Value.Name</PageTitle>
-<HeadContent>
-    <meta name="description" content="@T["Home.Intro"]" />
-</HeadContent>
+<SeoHead CanonicalPath="/"
+         Title="@Site.Value.Name"
+         Description="@T["Home.Intro"]"
+         ImageUrl="@ShowcaseImage" />
 
 <h1 class="page-title">@T["Home.Title"]</h1>
 <p class="page-intro">@T["Home.Intro"]</p>
@@ -23,7 +24,7 @@ else
     {
         <article class="hero">
             <div class="hero__art">
-                @if (HeroImageOf(hero) is { } image)
+                @if (hero.ShowcaseImageUrl is { } image)
                 {
                     <img src="@image" alt="" fetchpriority="high" decoding="async" />
                 }
@@ -171,6 +172,12 @@ else
     /// <summary>Jeu de la vitrine, absent dès qu'un critère est posé.</summary>
     private Game? Hero => _filter.IsActive ? null : FeaturedGame.Of(_allGames);
 
+    /// <summary>
+    /// Illustration de l'aperçu de partage : celle du jeu en vitrine, y compris sous
+    /// filtre, puisque l'adresse canonique de la page reste l'accueil nu.
+    /// </summary>
+    private Uri? ShowcaseImage => FeaturedGame.Of(_allGames)?.ShowcaseImageUrl;
+
     /// <summary>Jeux de la grille : le jeu en vitrine n'y est pas répété.</summary>
     private IEnumerable<Game> Listed =>
         Hero is { } hero ? _visibleGames.Where(game => game != hero) : _visibleGames;
@@ -192,13 +199,6 @@ else
 
         _visibleGames = _filter.Apply(_allGames);
     }
-
-    /// <summary>
-    /// La vitrine mérite mieux qu'une couverture de 315 pixels : on prend la première
-    /// capture quand le fichier éditorial en fournit une.
-    /// </summary>
-    private static Uri? HeroImageOf(Game game) =>
-        game.Screenshots.Count > 0 ? game.Screenshots[0].Url : game.CoverUrl;
 
     private string HrefWithTag(string? tag) => Href(tag, Engine, PlayableOnly);
 

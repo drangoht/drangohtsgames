@@ -3,6 +3,7 @@
 @inject IOptions<SiteOptions> Site
 
 <PageTitle>@T["About.Title"] — @Site.Value.Name</PageTitle>
+<SeoHead CanonicalPath="/about" Title="@T["About.Title"]" Description="@T["About.Body"]" />
 
 <h1 class="page-title">@T["About.Title"]</h1>
 
