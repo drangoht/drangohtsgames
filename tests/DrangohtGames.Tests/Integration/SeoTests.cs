@@ -122,4 +122,55 @@ public sealed class SeoTests : IClassFixture<SiteFactoryFixture>
 
         html.ShouldContain("<link rel=\"canonical\" href=\"http://localhost/en/about\"");
     }
+
+    [Theory]
+    [InlineData("/en/games/x-moon", "/games/x-moon")]
+    [InlineData("/fr/games/x-moon", "/games/x-moon")]
+    [InlineData("/en/about", "/about")]
+    [InlineData("/fr/about", "/about")]
+    [InlineData("/en/", "/")]
+    [InlineData("/fr/", "/")]
+    public async Task PageIndexable_DeclareChaqueLangueYComprisLaSienne(string chemin, string page)
+    {
+        // La réciprocité est la règle que Google fait respecter : chaque version doit
+        // désigner toutes les versions, elle-même comprise. Une seule déclaration manquante
+        // et l'ensemble du groupe est ignoré, sans que rien ne le signale.
+        var html = await CreateClient().GetStringAsync(chemin, CancellationToken.None);
+
+        html.ShouldContain(
+            $"<link rel=\"alternate\" hreflang=\"en\" href=\"http://localhost/en{page}\"");
+        html.ShouldContain(
+            $"<link rel=\"alternate\" hreflang=\"fr\" href=\"http://localhost/fr{page}\"");
+    }
+
+    [Theory]
+    [InlineData("/en/games/x-moon", "/games/x-moon")]
+    [InlineData("/fr/games/x-moon", "/games/x-moon")]
+    public async Task PageIndexable_DesigneLAnglaisCommeVersionParDefaut(string chemin, string page)
+    {
+        // x-default répond au visiteur dont la langue n'est ni l'une ni l'autre.
+        var html = await CreateClient().GetStringAsync(chemin, CancellationToken.None);
+
+        html.ShouldContain(
+            $"<link rel=\"alternate\" hreflang=\"x-default\" href=\"http://localhost/en{page}\"");
+    }
+
+    [Fact]
+    public async Task PageIndexable_AnnonceSaLangueEtCellesQuiLaDoublent()
+    {
+        var html = await CreateClient().GetStringAsync("/fr/games/x-moon", CancellationToken.None);
+
+        html.ShouldContain("property=\"og:locale\" content=\"fr\"");
+        html.ShouldContain("property=\"og:locale:alternate\" content=\"en\"");
+    }
+
+    [Fact]
+    public async Task PageDeJeu_NeDeclareAucuneAlternative()
+    {
+        // La page de jeu porte déjà noindex : lui donner des alternatives reviendrait à
+        // demander leur indexation à celles-là mêmes qu'on exclut.
+        var html = await CreateClient().GetStringAsync("/en/games/x-moon/play", CancellationToken.None);
+
+        html.ShouldNotContain("rel=\"alternate\"");
+    }
 }

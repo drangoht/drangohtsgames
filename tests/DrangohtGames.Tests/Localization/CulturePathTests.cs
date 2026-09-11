@@ -48,6 +48,17 @@ public sealed class CulturePathTests
     }
 
     [Theory]
+    [InlineData("https://exemple.test/fr/", "https://exemple.test/")]
+    [InlineData("https://exemple.test/en/", "https://exemple.test/")]
+    [InlineData("https://exemple.test/", "https://exemple.test/")]
+    public void SiteRootOf_OteLePrefixeDeLangueDeLaBase(string baseUri, string attendue)
+    {
+        // Les adresses des autres langues se construisent depuis la racine du site, pas
+        // depuis la base de la page courante — qui porte déjà une langue.
+        CulturePath.SiteRootOf(new Uri(baseUri)).ToString().ShouldBe(attendue);
+    }
+
+    [Theory]
     [InlineData("/french/toast")]
     [InlineData("/enigme")]
     [InlineData("/frontend")]

@@ -164,13 +164,14 @@ recherche.
 
 - [x] Les adresses sans préfixe redirigent en **301** vers leur version anglaise ; seule
       la racine négocie, en **302**, puisque sa destination dépend du visiteur.
-- [ ] Un test vérifie qu'une page indexable déclare un `hreflang` **réciproque** vers chaque
+- [x] Un test vérifie qu'une page indexable déclare un `hreflang` **réciproque** vers chaque
       autre langue, plus `x-default` — la réciprocité manquante est l'erreur classique, et
       elle ne se voit pas à l'œil.
 - [x] Un test vérifie que `/health`, `/robots.txt` et `/sitemap.xml` restent accessibles
       **sans** préfixe, et qu'une feuille de style répond identiquement avec et sans.
-- [ ] Le plan du site porte une entrée par langue et par page — fait — **avec ses
-      alternates** — reste à faire avec les `hreflang`.
+- [x] Le plan du site porte une entrée par langue et par page. Les alternatives, elles,
+      sont déclarées dans l'en-tête des pages : Google accepte l'une **ou** l'autre méthode,
+      et les tenir aux deux endroits, c'est se donner deux occasions de les désaccorder.
 - [x] `POST /culture`, le cookie de culture et leurs tests sont retirés : le sélecteur
       est devenu un lien, et rien d'autre ne les utilisait.
-- [ ] Mettre à jour `README.md` (tableau des routes, section sur les langues) et `CLAUDE.md`.
+- [x] `README.md` (tableau des routes, section sur les langues) et `CLAUDE.md` sont à jour.

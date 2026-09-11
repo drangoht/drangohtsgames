@@ -36,4 +36,20 @@ public static class CulturePath
         rest = path;
         return false;
     }
+
+    /// <summary>
+    /// Racine du site, préfixe de langue ôté.
+    /// </summary>
+    /// <remarks>
+    /// La base d'une page porte déjà sa langue : les adresses des autres langues se
+    /// construisent depuis la racine, sans quoi elles s'empileraient (<c>/fr/en/…</c>).
+    /// </remarks>
+    public static Uri SiteRootOf(Uri baseUri)
+    {
+        ArgumentNullException.ThrowIfNull(baseUri);
+
+        return TryDetach(new PathString(baseUri.AbsolutePath), out _, out var rest)
+            ? new Uri(baseUri, rest.Value ?? "/")
+            : baseUri;
+    }
 }

@@ -42,6 +42,7 @@ docker compose up -d          # lit .env (voir .env.example)
 | `Games/Snapshots/` | instantané de repli quand l'API est indisponible |
 | `Games/SelfHosted/` | recensement des builds Web servis par le site (`wwwroot/play/`) |
 | `web-builds.json` | manifeste des builds téléchargés à la construction de l'image (ADR 0007) |
+| `Localization/` | préfixe de langue du chemin (`CulturePath`, `CulturePrefix`) — ADR 0008 |
 | `Resources/SharedResources*.resx` | traductions FR/EN — les deux fichiers portent les mêmes clés |
 | `docs/adr/` | décisions structurantes, dont la dérogation mono-projet (ADR 0002) |
 
@@ -73,8 +74,16 @@ docker compose up -d          # lit .env (voir .env.example)
   n'est jamais versionné ici. À l'exécution, rien ne lit ce manifeste : `SelfHostedGames`
   constate la présence de `index.html`. Un jeu sans build renvoie vers itch.io, sans cas
   particulier à écrire.
+- **La langue est portée par le chemin** (`/en/…`, `/fr/…`, ADR 0008), détachée en
+  `PathBase` à l'entrée du pipeline : aucune route `@page` ne la connaît. Conséquence à ne
+  pas perdre de vue — **tout lien interne doit être relatif** (`href="games/x"`), car
+  `<base href>` porte le préfixe. Un `href="/games/x"` absolu échappe à la base et renvoie
+  le visiteur en anglais. Seuls les liens du sélecteur de langue sont absolus, à dessein.
+- **Ajouter une page indexable, c'est l'ajouter au plan du site** (`Seo/Sitemap.cs`, une
+  entrée par langue) **et lui donner un `SeoHead`**, qui pose sa canonique et ses `hreflang`
+  réciproques. Une réciprocité manquante fait ignorer tout le groupe, sans rien signaler.
 - Le rendu est **Blazor SSR statique** : pas d'interactivité côté client, les formulaires
-  sont de vrais `<form>` HTML (GET pour les filtres, POST + antiforgery pour la langue).
+  sont de vrais `<form>` HTML (GET pour les filtres).
 
 ## Réflexes attendus
 

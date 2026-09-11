@@ -10,12 +10,27 @@
        les paramètres de campagne produisent sinon autant de copies indexées. *@
     <link rel="canonical" href="@CanonicalUrl" />
 
+    @* Chaque version désigne toutes les versions, la sienne comprise : la réciprocité est
+       la condition pour que le groupe soit pris en compte, et son absence ne se signale
+       nulle part. « x-default » répond au visiteur dont la langue n'est ni l'une ni l'autre. *@
+    @foreach (var culture in SupportedCultures.All)
+    {
+        <link rel="alternate" hreflang="@culture" href="@UrlIn(culture)" />
+    }
+    <link rel="alternate" hreflang="x-default" href="@UrlIn(SupportedCultures.Default)" />
+
     <meta name="description" content="@Description" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="@Site.Value.Name" />
     <meta property="og:url" content="@CanonicalUrl" />
     <meta property="og:title" content="@Title" />
     <meta property="og:description" content="@Description" />
+    <meta property="og:locale" content="@CurrentCulture" />
+
+    @foreach (var culture in SupportedCultures.All.Where(other => other != CurrentCulture))
+    {
+        <meta property="og:locale:alternate" content="@culture" />
+    }
 
     @if (ImageUrl is not null)
     {
@@ -62,4 +77,16 @@
     /// </summary>
     private string CanonicalUrl =>
         new Uri(new Uri(Navigation.BaseUri), CanonicalPath.TrimStart('/')).ToString();
+
+    private static string CurrentCulture => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    /// <summary>Adresse de cette même page dans une autre langue.</summary>
+    /// <remarks>
+    /// Construite depuis la racine du site : la base de la page porte déjà une langue, et
+    /// s'en servir empilerait les préfixes.
+    /// </remarks>
+    private string UrlIn(string culture) =>
+        new Uri(
+            CulturePath.SiteRootOf(new Uri(Navigation.BaseUri)),
+            $"{culture}{CanonicalPath}").ToString();
 }
