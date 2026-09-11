@@ -374,9 +374,11 @@ jobs:
           # `***` dans la trace, elle rend le moindre diagnostic impossible — l'échec
           # précédent affichait « Could not resolve host: *** » sans dire quel nom.
           url="${{ vars.SITE_URL || format('https://{0}', secrets.VPS_HOST) }}"
-          # La sonde *et* la page d'accueil : /health n'interroge pas itch.io, il répond
+          # La sonde *et* les pages d'accueil : /health n'interroge pas itch.io, il répond
           # donc 200 alors que le catalogue est en erreur et que le site est inutilisable.
-          for page in /health /; do
+          # Les deux langues, car l'une peut casser sans l'autre — et non la racine, qui
+          # depuis l'ADR 0008 ne fait que rediriger vers l'une d'elles.
+          for page in /health /en/ /fr/; do
             servie=""
             for attempt in $(seq 1 12); do
               code="$(curl -fsS -o /dev/null -w '%{http_code}' "${url}${page}" || true)"
