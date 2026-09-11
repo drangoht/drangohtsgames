@@ -156,6 +156,22 @@ public sealed class CulturePrefixTests : IClassFixture<SiteFactoryFixture>
         }
     }
 
+    [Theory]
+    [InlineData("/fr/games/x-moon")]
+    [InlineData("/en/about")]
+    [InlineData("/fr/")]
+    public async Task LienDEvitement_ResteSurLaPageAuLieuDeRamenerALAccueil(string chemin)
+    {
+        // Piège de <base href> : une référence réduite à un fragment se résout contre la
+        // base, pas contre l'adresse courante. Un « #main » nu ferait quitter la page —
+        // le lien d'évitement, qui n'existe que pour les lecteurs d'écran et le clavier,
+        // renverrait à l'accueil sans que personne ne s'en aperçoive.
+        var html = await CreateClient().GetStringAsync(chemin, CancellationToken.None);
+
+        html.ShouldContain($"class=\"skip-link\" href=\"{chemin}#main\"");
+        html.ShouldNotContain("href=\"#main\"");
+    }
+
     [Fact]
     public async Task SelecteurDeLangue_RenvoieVersLaMemePageDansLAutreLangue()
     {

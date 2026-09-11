@@ -179,10 +179,6 @@ h1, h2, h3 {
     border-radius: var(--radius-sm);
 }
 
-.culture__form {
-    margin: 0;
-}
-
 .culture__button {
     border: 0;
     background: none;
@@ -195,9 +191,13 @@ h1, h2, h3 {
     transition: background var(--transition), color var(--transition);
 }
 
-.culture__button:hover {
+.culture__button:hover,
+.culture__button:focus-visible {
     color: var(--text);
     background: var(--bg-input);
+    /* Ce sont des liens depuis l'ADR 0008 : sans cela, ils se soulignent au survol
+       alors qu'ils ont l'apparence de boutons. */
+    text-decoration: none;
 }
 
 .culture__button--current {
