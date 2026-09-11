@@ -156,7 +156,10 @@ jobs:
           # dans la suite de tests ne voit l'archive décompressée. On demande donc leur
           # index.html — un fichier statique, servi même avec un catalogue vide, alors que
           # /games/<slug>/play dépend d'itch.io et répondrait 404 avec la clé invalide.
-          pages="/health /"
+          # Depuis l'ADR 0008, les pages vivent sous un préfixe de langue et la racine ne
+          # fait que rediriger : c'est /en/ et /fr/ qu'il faut demander pour éprouver un
+          # rendu réel, et les deux, puisqu'une langue peut casser sans l'autre.
+          pages="/health /en/ /fr/"
           for slug in $(jq -r '.builds | keys[]' web-builds.json); do
             pages="${pages} /play/${slug}/index.html"
           done
@@ -180,6 +183,25 @@ jobs:
               break
             fi
           done
+
+          # La racine est la porte d'entrée du site et ne répond plus 200 : elle oriente le
+          # visiteur vers sa langue (ADR 0008). Une image qui la servirait en 200, ou qui
+          # renverrait ailleurs que sous un préfixe, serait cassée sans que rien ci-dessus
+          # ne le voie.
+          if [ "$echec" = "0" ]; then
+            code="$(curl -sS -o /dev/null -w '%{http_code}' "http://localhost:8080/" || true)"
+            destination="$(curl -sS -o /dev/null -w '%{redirect_url}' "http://localhost:8080/" || true)"
+
+            case "${code}:${destination}" in
+              302:*/en/|302:*/fr/)
+                echo "La racine oriente vers ${destination}."
+                ;;
+              *)
+                echo "::error::La racine devrait orienter vers une langue (statut ${code:-aucun}, destination ${destination:-aucune})."
+                echec=1
+                ;;
+            esac
+          fi
 
           if [ "$echec" != "0" ]; then
             docker logs epreuve
