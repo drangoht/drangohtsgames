@@ -306,6 +306,7 @@ Trois familles de tests :
   widget itch.io embarqué et les scripts de Blazor. À ajouter en la validant page par page.
 - **URL par langue et `hreflang`** : la langue vit dans un cookie, pas dans l'URL. Un moteur
   n'indexe donc qu'une seule version du site, et un lien partagé n'ouvre pas forcément la
-  langue du contenu partagé. À trancher dans un ADR avant d'être implémenté.
+  langue du contenu partagé. Le préfixe de chemin `/en/`, `/fr/` est proposé par
+  [ADR 0008](docs/adr/0008-urls-par-langue-et-hreflang.md), encore à valider.
 - **Flux RSS/Atom des sorties** : le canal de suivi le moins coûteux pour une vitrine de jeux.
 - **Analyse SonarCloud** dans la CI, comme sur `Algorithme-de-Huffman`.
