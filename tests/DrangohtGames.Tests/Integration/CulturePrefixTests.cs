@@ -113,12 +113,12 @@ public sealed class CulturePrefixTests : IClassFixture<SiteFactoryFixture>
     [Theory]
     [InlineData("/en/")]
     [InlineData("/fr/")]
-    public async Task PagePrefixee_ServitSesRessourcesCommeSansPrefixe(string chemin)
+    public async Task PagePrefixee_SertChaqueFeuilleQuelleReference(string chemin)
     {
-        // Les feuilles de style sont référencées relativement à <base> : sous un préfixe de
-        // langue, le navigateur les demande préfixées. Le préfixe ne doit rien changer à ce
-        // qu'elles répondent, sans quoi le site s'afficherait sans style — et aucun test de
-        // contenu ne le verrait.
+        // Deux défauts d'un coup, qu'aucun test de contenu ne verrait : une feuille
+        // référencée mais absente, et une feuille que le préfixe de langue rendrait
+        // introuvable — les liens étant relatifs à <base>, elle est demandée préfixée.
+        // Dans les deux cas le site s'afficherait sans style, en répondant 200.
         var client = CreateClient();
         var html = await client.GetStringAsync(chemin, CancellationToken.None);
         var feuilles = StylesheetHrefs(html).ToList();
@@ -127,20 +127,12 @@ public sealed class CulturePrefixTests : IClassFixture<SiteFactoryFixture>
 
         foreach (var feuille in feuilles)
         {
-            using var prefixee = await client.GetAsync(
+            using var response = await client.GetAsync(
                 new Uri(new Uri(new Uri("http://localhost"), chemin), feuille),
                 CancellationToken.None);
-            using var nue = await client.GetAsync(
-                new Uri(new Uri("http://localhost/"), feuille),
-                CancellationToken.None);
 
-            prefixee.StatusCode.ShouldBe(nue.StatusCode, feuille);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK, feuille);
         }
-
-        // Une comparaison ne prouve rien si les deux côtés échouent : au moins la feuille
-        // du site répond, et elle répond sous le préfixe.
-        using var appCss = await client.GetAsync($"{chemin}app.css", CancellationToken.None);
-        appCss.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     private static IEnumerable<string> StylesheetHrefs(string html)

@@ -10,7 +10,10 @@
     <base href="@BaseHref" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["DrangohtGames.Web.styles.css"]" />
+    @* La feuille des styles isolés (DrangohtGames.Web.styles.css) n'est pas référencée :
+       aucun composant n'a de fichier .razor.css, donc elle n'est jamais produite et le
+       navigateur récoltait un 404 à chaque page. La rétablir en même temps que le premier
+       .razor.css — sans elle, ses styles ne s'appliqueraient pas. *@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>" />
     <ImportMap />
     <HeadOutlet />
