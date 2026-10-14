@@ -159,7 +159,8 @@ jobs:
           # Depuis l'ADR 0008, les pages vivent sous un préfixe de langue et la racine ne
           # fait que rediriger : c'est /en/ et /fr/ qu'il faut demander pour éprouver un
           # rendu réel, et les deux, puisqu'une langue peut casser sans l'autre.
-          pages="/health /en/ /fr/"
+          # Le script Blazor que chaque page référence : une image peut le perdre au build.
+          pages="/health /en/ /fr/ /_framework/blazor.web.js"
           for slug in $(jq -r '.builds | keys[]' web-builds.json); do
             pages="${pages} /play/${slug}/index.html"
           done
