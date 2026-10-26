@@ -197,6 +197,26 @@
   <data name="About.Links" xml:space="preserve">
     <value>Elsewhere</value>
   </data>
+  <data name="Roblox.Title" xml:space="preserve">
+    <value>Roblox games</value>
+  </data>
+  <data name="Roblox.Intro" xml:space="preserve">
+    <value>I also make games on Roblox. They are played on the Roblox platform, for free, on computer, phone or tablet.</value>
+  </data>
+  <data name="Roblox.Eyebrow" xml:space="preserve">
+    <value>Now on Roblox</value>
+  </data>
+  <data name="Roblox.PlayOnRoblox" xml:space="preserve">
+    <value>Play on Roblox</value>
+  </data>
+  <data name="Roblox.CandyCritter.Tagline" xml:space="preserve">
+    <value>Collect candy critters, guard your base, and steal the rarest ones from the other players.</value>
+  </data>
+  <data name="Roblox.CandyCritter.Description" xml:space="preserve">
+    <value>Critters made of candy roll out of the factory on a giant conveyor belt. Buy the ones you like, carry them home and set them on their stands: each one earns you sugar every second, and the rarer it is, the more it brings in.
+But your neighbours can see your critters too. Run into their base, grab their best critter and bring it back home before they catch you — and lock your own base while you are away, or bonk the thieves with your bat.
+Up to 32 players share the same candy land. Rebirths, a VIP ring full of legendary critters, daily rewards and a hall of fame keep every session going.</value>
+  </data>
   <data name="NotFound.Title" xml:space="preserve">
     <value>Page not found</value>
   </data>

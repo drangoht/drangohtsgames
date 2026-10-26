@@ -175,6 +175,23 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
     }
 
     [Fact]
+    public async Task Roblox_PresenteLeJeuEtRenvoieVersSaPageRoblox()
+    {
+        var html = await CreateClient().GetStringAsync("/en/roblox", CancellationToken.None);
+
+        html.ShouldContain("Steal a Candy Critter");
+        html.ShouldContain("https://www.roblox.com/games/98446348259897/Steal-a-Candy-Critter");
+    }
+
+    [Fact]
+    public async Task Navigation_MeneALaRubriqueRoblox()
+    {
+        var html = await CreateClient().GetStringAsync("/en/", CancellationToken.None);
+
+        html.ShouldContain("href=\"roblox\"");
+    }
+
+    [Fact]
     public async Task Reponses_PortentLesEntetesDeSecuriteAttendus()
     {
         var response = await CreateClient().GetAsync("/en/", CancellationToken.None);
@@ -191,6 +208,7 @@ public sealed class SiteTests : IClassFixture<SiteFactoryFixture>
     [InlineData("/en/")]
     [InlineData("/en/games/x-moon")]
     [InlineData("/en/about")]
+    [InlineData("/en/roblox")]
     public async Task LesPages_RepondentAUneRequeteHead(string chemin)
     {
         // Les services de supervision sondent en HEAD : une page qui n'y répond pas

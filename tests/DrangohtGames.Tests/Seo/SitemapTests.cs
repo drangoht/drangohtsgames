@@ -37,6 +37,15 @@ public sealed class SitemapTests
     }
 
     [Fact]
+    public void Build_ListeLaRubriqueRoblox_DansChaqueLangue()
+    {
+        var xml = Sitemap.Build([new GameBuilder().Build()], BaseUri);
+
+        xml.ShouldContain("<loc>https://exemple.test/en/roblox</loc>");
+        xml.ShouldContain("<loc>https://exemple.test/fr/roblox</loc>");
+    }
+
+    [Fact]
     public void Build_NAnnoncePlusAucuneAdresseSansLangue()
     {
         // Une adresse sans préfixe redirige (ADR 0008) : l'annoncer ferait explorer au

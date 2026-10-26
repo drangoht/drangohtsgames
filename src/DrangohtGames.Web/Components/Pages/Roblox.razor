@@ -1,0 +1,52 @@
+@page "/roblox"
+@inject IStringLocalizer<SharedResources> T
+@inject IOptions<SiteOptions> Site
+@inject NavigationManager Navigation
+
+<PageTitle>@T["Roblox.Title"] — @Site.Value.Name</PageTitle>
+<SeoHead CanonicalPath="/roblox"
+         Title="@T["Roblox.Title"]"
+         Description="@T["Roblox.Intro"]"
+         ImageUrl="@ShowcaseImageUrl" />
+
+<h1 class="page-title">@T["Roblox.Title"]</h1>
+<p class="page-intro">@T["Roblox.Intro"]</p>
+
+@* Les jeux Roblox ne sont pas sur itch.io : ils échappent au catalogue et vivent ici,
+   en dur, tant qu'il n'y en a qu'un. *@
+<article class="hero">
+    <div class="hero__art">
+        <img src="@ShowcaseImage" alt="" fetchpriority="high" decoding="async" />
+    </div>
+    <div class="hero__body">
+        <p class="hero__eyebrow">@T["Roblox.Eyebrow"]</p>
+        <h2 class="hero__title">Steal a Candy Critter</h2>
+        <p class="hero__tagline">@T["Roblox.CandyCritter.Tagline"]</p>
+        <div class="hero__actions">
+            <a class="button button--primary" href="@CandyCritterUrl"
+               rel="noopener noreferrer external" target="_blank">
+                @T["Roblox.PlayOnRoblox"]
+            </a>
+        </div>
+    </div>
+</article>
+
+<section class="prose">
+    <h2>@T["Game.About"]</h2>
+    @foreach (var paragraph in T["Roblox.CandyCritter.Description"].Value.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+    {
+        <p>@paragraph</p>
+    }
+</section>
+
+@code {
+    private const string CandyCritterUrl = "https://www.roblox.com/games/98446348259897/Steal-a-Candy-Critter";
+
+    private string ShowcaseImage => Assets["images/roblox/steal-a-candy-critter.jpg"];
+
+    /// <summary>
+    /// Adresse absolue de l'illustration pour l'aperçu de partage, résolue depuis la racine
+    /// du site : la base de la page porte un préfixe de langue que l'image n'a pas.
+    /// </summary>
+    private Uri ShowcaseImageUrl => new(CulturePath.SiteRootOf(new Uri(Navigation.BaseUri)), ShowcaseImage);
+}

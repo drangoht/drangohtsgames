@@ -197,6 +197,26 @@
   <data name="About.Links" xml:space="preserve">
     <value>Ailleurs</value>
   </data>
+  <data name="Roblox.Title" xml:space="preserve">
+    <value>Jeux Roblox</value>
+  </data>
+  <data name="Roblox.Intro" xml:space="preserve">
+    <value>Je fais aussi des jeux sur Roblox. Ils se jouent sur la plateforme Roblox, gratuitement, sur ordinateur, téléphone ou tablette.</value>
+  </data>
+  <data name="Roblox.Eyebrow" xml:space="preserve">
+    <value>Disponible sur Roblox</value>
+  </data>
+  <data name="Roblox.PlayOnRoblox" xml:space="preserve">
+    <value>Jouer sur Roblox</value>
+  </data>
+  <data name="Roblox.CandyCritter.Tagline" xml:space="preserve">
+    <value>Collectionnez des créatures en bonbon, protégez votre base et volez les plus rares aux autres joueurs.</value>
+  </data>
+  <data name="Roblox.CandyCritter.Description" xml:space="preserve">
+    <value>Des créatures en bonbon sortent de l'usine sur un tapis roulant géant. Achetez celles qui vous plaisent, ramenez-les chez vous et posez-les sur leur socle : chacune vous rapporte du sucre à chaque seconde, et plus elle est rare, plus elle rapporte.
+Mais vos voisins voient vos créatures, eux aussi. Foncez dans leur base, attrapez leur plus belle créature et rapportez-la chez vous avant qu'ils ne vous rattrapent — et verrouillez votre base pendant votre absence, ou chassez les voleurs à coups de batte.
+Jusqu'à 32 joueurs partagent le même pays des bonbons. Renaissances, anneau VIP rempli de créatures légendaires, récompenses quotidiennes et tableau d'honneur relancent chaque partie.</value>
+  </data>
   <data name="NotFound.Title" xml:space="preserve">
     <value>Page introuvable</value>
   </data>

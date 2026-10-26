@@ -24,6 +24,7 @@ public static class Sitemap
             SupportedCultures.All.SelectMany(culture => new[]
             {
                 Url(baseUri, $"{culture}/"),
+                Url(baseUri, $"{culture}/roblox"),
                 Url(baseUri, $"{culture}/about"),
             }.Concat(games.Select(game =>
                 Url(baseUri, $"{culture}/games/{game.Slug.Value}", game.PublishedAt)))));
